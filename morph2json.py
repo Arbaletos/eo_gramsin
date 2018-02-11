@@ -8,13 +8,37 @@ import sys
 TEI = '{http://www.tei-c.org/ns/1.0}'
 
 def numparse(instr):
-  """Parses Esperanto numerals """
-  edict = {'unu':1,'du':2,'tri':3,'kvar':4,'kvin':5,'ses':6,'sep':7,'ok':8,'naŭ':9}
-  mdict = {'dek':10,'cent':100}
+  """Parses esperanto numerics, and returns it's value in string, 'NaN' (not a number) , or 'NkN' (uncorrect number) """
+
+  edict = {'nul':0,'unu':1,'du':2,'tri':3,'kvar':4,'kvin':5,'ses':6,'sep':7,'ok':8,'naŭ':9}
+  mdict = {'dek':10,'cent':100,'mil':1000}
   cstr = instr[:]
-  if len(kombiki(cstr,edict,mdict))>0:
-    return ['NUM']
-  return [] 
+  mul = 1
+  cur = 0
+  while len(cstr)>0:
+    check = False
+    for vort in edict.keys():
+      if cstr.endswith(vort):
+        cstr = cstr[:-len(vort)]
+        cur += (mul-1)*edict[vort]
+        #print ("detected " + vort)
+        #print ("new string: " + cstr)
+        check = True
+    for vort in mdict.keys():
+      if cstr.endswith(vort):
+        if mul<mdict[vort]:
+          check = True
+          cstr = cstr[:-len(vort)]
+          mul = mdict[vort]
+          cur += mul
+        else:
+          return 'NkN'
+    if check:
+      continue
+    return 'NaN'
+#  ret = str(cur)
+#  return ret
+  return 'NUM'
 
 def kombini(cstr,kom_dict, fin_dict):
   ret = []
@@ -26,78 +50,53 @@ def kombini(cstr,kom_dict, fin_dict):
           ret+=fin_dict[fin]
   return ret
 
-def kombiki(cstr,kom_dict, fin_dict):
-  ret = []
-  for kom in kom_dict.keys():
-      for fin in fin_dict.keys():
-        if kom+fin==cstr:
-          return [kom_dict[kom]+fin_dict[find]]
-  return ret
-
       
 def korelativoj(instr):
   """Parses correlatives in esperanto"""
   cstr = instr[:]
-  kom_dict = {'ki':'INT','i':'IND','ĉi':'TOT','neni':'NEG','ti':'DEM'}
-  fin_dict = {'a':'ASN', \
-    'o':'PRN','u':'DSN', \
-    'e':'ADV','el':'ADV','en':'ADD', \
-    'es':'DPS','om':'DQU', \
-    'am':'ADV','al':'ADV','on':'PRA', \
-    'aj':'APN','an':'ASA',\
-    'ajn':'APA','uj':'DPN',\
-    'un':'DSA','ujn':'DPA'}
-  return kombiki(cstr,kom_dict,fin_dict)
+  kom_dict = {'ki':'REL','i':'INDEF','ĉi':'UNI','neni':'NEG','ti':'INDIC'}
+  fin_dict = {'a':['PROP','SING','NOM'], \
+    'o':['MAT','NOM'],'u':['PERS','SING','NOM'], \
+    'e':['LOC'],'el':['MODUS'],'en':['LOC','DIR'], \
+    'es':['POSS'],'om':['COUNT'],'oma':['NUM'], \
+    'am':['TEMP'],'al':['KAUZ'],'on':['MAT','ACC'], \
+    'aj':['PROP','PLUR','NOM'],'an':['PROP','SING','ACC'],\
+    'ajn':['PROP','PLUR','ACC'],'uj':['PERS','PLUR','NOM'],\
+    'un':['PERS','SING','ACC'],'ujn':['PERS','PLUR','ACC']}
+  ret = kombini(cstr,kom_dict,fin_dict)
+  if len(ret) > 0:
+    ret = ['KOR'] + ret
+  return ret
 
 def pronomoj(instr):
   """Parses pronouns"""
   cstr = instr[:]
-  kom_dict = {'m':'PR',
-    'v':'PR', \
-    'c':'PR', \
-    'l':'PR', \
-    'ŝ':'PR', \
-    'ĝ':'PR', \
-    's':'PR', \
-    'n':'PR', \
-    'il':'PR', \
-    'on':'PR'}
-  fin_dict = {'i':'N', \
-    'in':'A', \
-    'ia':'PSN', \
-    'ian':'PSA', \
-    'iaj':'PPN', \
-    'iajn':'PPA'}
-  return kombiki(sctr,kom_dict,fin_dict)
-
-def gettag(cword):
   ret = []
-  word = cword[:].lower()
-  ret+=numparse(word)
-  ret+=korelativoj(word)
-  ret+=pronomoj(word)
-
-  if len(word)==1:
-    cur = ['SYMB']
-
-  if word in dict.keys():
-    ret.append(dict[word])
-
-  if len(ret==0):
-    for fin in fin_dict.keys():
-      if word.endswith(fin):
-        ret+=[find_dict[fin]]
-
-  if cword[0].isupper():
-    ret.append(['PROPN']) 
+  kom_dict = {'m':['I','SING'], \
+    'v':['II'], \
+    'c':['II','SING','INFORMAL'], \
+    'l':['III','SING','MAS'], \
+    'ŝ':['III','SING','FEM'], \
+    'ĝ':['III','SING'], \
+    's':['S'], \
+    'n':['I','PLUR'], \
+    'il':['III','PLUR'], \
+    'on':[]}
+  fin_dict = {'i':[], \
+    'in':['ACC'], \
+    'ia':['POSS'], \
+    'iaj':['POSS','PLUR'], \
+    'iajn':['POSS','PLUT','ACC']}
+  ret = kombini(cstr,kom_dict,fin_dict)
+  if len(ret) > 0:
+    ret = ['PRON'] + ret[0]
   return ret
-
 
 def getstem(cword,gram):
   word = cword[:].lower()
   ret = []
   cur = numparse(word)
-  if cur!='NAN':
+  if cur!='NaN':
      cur = [cur]
 #    gram+=['NUM',cur]
 #    ret.append([word[:],gram[:]])
@@ -199,10 +198,9 @@ def parsesent(sent):
         ret.append({'word':c,'morph':stem})
     if len(cw)>0:
       grams = []
-#      stem = getstem(cw,grams)
-      tag = gettag(cw)
-      print ("%s:%r" %(cw, tag))
-      ret.append({'word':cw,'tag':tag})
+      stem = getstem(cw,grams)
+      print ("%s:%r" %(cw, stem))
+      ret.append({'word':cw,'morph':stem})
 
   if len(undef)>0:
     print ('Estas maldefinitaj vortoj. Ĉu vi volas Defini? (y/n)')
@@ -230,12 +228,6 @@ undef = []
 out = ''
 
 dictcsv = open("dict.csv","r")
-
-fin_dict = {
-'o':'NSN','oj':'NPN',:'on':'NSA','ojn':'NPA',
-'a':'ASN','aj':'APN','an':'ASA','ajn':'APA',
-'e':'ADE','en':'ADD',:'as':'VPR','os':'VFT',
-'is':'VPS','i':'VIN','u':'VDM','us':'VCN'}
 
 for line in dictcsv:
   c = line[:-1].split(',')
