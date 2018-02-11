@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<!DOCTYPE TEI PUBLIC "-//tekstaro.com//DTD Tekstaro de Esperanto//EN" "http://tekstaro.com/xml/dtd/tei-tekstaro.dtd">
+<TEI xml:id="fundamenta-ekzercaro" xml:lang="eo" xmlns="http://www.tei-c.org/ns/1.0">
+
+	<teiHeader>
+
+		<fileDesc>
+
+			<titleStmt>
+
+				<title>Ekzercaro de la Fundamento de Esperanto: elektronika versio</title>
+
+			</titleStmt>
+
+			<extent>6.744 vortoj</extent>
+
+			<publicationStmt>
+
+				<publisher xml:lang="en">Esperantic Studies Foundation</publisher>
+
+			</publicationStmt>
+
+			<sourceDesc>
+
+				<biblStruct>
+
+					<analytic>
+
+						<author>L. Zamenhof</author>
+
+						<title type="main">Ekzercaro</title>
+
+						<title type="subordinate">de la lingvo internacia “Esperanto”</title>
+
+					</analytic>
+
+					<monogr>
+
+						<author>L. Zamenhof</author>
+
+						<title type="main">Fundamento de Esperanto</title>
+
+						<edition>9a eldono kun Enkondukoj, Notoj kaj Lingvaj Rimarkoj de D-ro <name xml:lang="fr">A. Albault</name></edition>
+
+						<imprint>
+
+							<publisher>Esperantaj Francaj Eldonoj</publisher>
+
+							<pubPlace xml:lang="fr">Marmande</pubPlace>
+
+							<date>1968</date>
+
+						</imprint>
+
+						<extent>356 p.</extent>
+
+						<biblScope type="pages">81 — 135</biblScope>
+
+					</monogr>
+
+					<note>Proksimuma verkojaro/tradukojaro: 1905</note>
+
+					<note>Kreis la Esperantan tekston: Zamenhof</note>
+
+				</biblStruct>
+
+			</sourceDesc>
+
+		</fileDesc>
+
+	</teiHeader>
+
+	<text>
+
+		<body>
+
+			<div>
+				<div>
+					<p xml:id="e68081">Kiam la ĉiopova <name xml:lang="">Mahadeva</name> kreis la belegan Hindujon, li deflugis sur la teron, por ĝin admiri. De lia flugo eklevis sin varma, bonodora vento. La fieraj palmoj klinis antaŭ <name xml:lang="">Mahadeva</name> siajn suprojn, kaj ekfloris sub lia rigardo la puraj, blankaj, delikataj, aromaj lilioj. <name xml:lang="">Mahadeva</name> deŝiris unu el la lilioj kaj ĵetis ĝin en la lazuran maron. La vento ekŝancelis la kristalan akvon kaj enkovris la belegan lilion per blanka ŝaŭmo. Minuto — kaj el tiu ĉi bukedo de ŝaŭmo ekfloris la virino — delikata, bonodora kiel la lilio, facila kiel la vento, ŝanĝa kiel la maro, kun beleco, brilanta kiel la ŝaŭmo mara, kaj rapide pasanta, kiel tiu ĉi ŝaŭmo.</p>
+
+				</div>
+
+			</div>
+
+		</body>
+
+	</text>
+
+</TEI>
