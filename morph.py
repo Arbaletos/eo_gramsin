@@ -1,7 +1,10 @@
 #/usr/bin/python3
 #coding=utf-8
 
-import xml.etree.ElementTree as etree
+try:
+  import xml.etree.cElementTree as etree
+except ImportError:
+  import xml.etree.ElementTree as etree
 import json
 import sys
 from spacy.lang.eo import Esperanto
@@ -96,15 +99,18 @@ def gettag(cword):
     ret+=dict[word]
 
   if len(ret)==0:
+    if cword.text[0].isupper():
+      ret.append('PROPN') 
     for fin in fin_dict.keys():
       if word.endswith(fin):
         ret+=[fin_dict[fin]]
-
-  if cword.text[0].isupper():
-    ret.append('PROPN') 
-  
   if len(ret)==0:
     ret.append('X')
+  return ret
+
+def postparse(sent):
+  """Adding POS-TAG, lemmas, changing qu and y trick back."""
+  ret = []
   return ret
 
 def parsesent(sent):
@@ -116,14 +122,21 @@ def parsesent(sent):
   for word in words:
     ret.append([id,word,gettag(word)])
     id+=1
+    if word.text[0] in ['.','!','?']:
+      new_sent = True
+      id = 1
+#  sent = postparse(sent)
   return ret
 
 def output(conl):
   for i in conl:
-#   print(i)
-    print ("%d\t%s\t%s" % (i[0],i[1],','.join(i[2])))
+    s = "%d\t%s\t%s" % (i[0],i[1],','.join(i[2]))
+    print(s)
+    out.write(s+'\n')
+  out.write('\n')
 #|-------------------------->╔═╦═╗║ ║ ║╠═╬═╣╚═╩═╝
 
+new_sent = True
 dict = {}
 undef = []
 out = ''
@@ -145,34 +158,30 @@ dictcsv.close()
 
 for i in range (1, len(sys.argv)):
   filename = 'corp/in/'+sys.argv[i]+'.xml'
-#  out = open('out/'+sys.argv[i]+'.json',"w")
+  out = open('out/'+sys.argv[i]+'.con',"w")
   tree = etree.parse(filename)
   root = tree.getroot()
-#  out.write('[')
-  for s in tree.iter(attr = TEI+'p'):
-    if len(s.text) > 0:
-       print(s.text)
-       output(parsesent(s.text))
-#      out.write('[')
-#      out.write(json.dumps(parsesent(s.text)))
-#      out.write(']')
-#    undef = []
-#  out.write(']')
-#  out.close
-#out = open('out/stdout.json',"w")
-#out.write('[')
+  for s in tree.iter(tag = TEI+'p'):
+    text = s.text
+    for t in s:
+      c = t.text.split()
+      for i in range(len(c)):
+        c[i] = c[i]+'y'
+#It is 'y-trick' - as a q-trick, aber anderer.
+      text+=' '.join(c)
+      text+=t.tail
+    print (text)
+    if len(text) > 0:
+       print(text)
+       output(parsesent(text))
+  out.close
+out = open('out/stdout.out',"w")
 while True:
   sent = input("Input esperanto sentense or q to exit!\n")
   if (sent=='q'):
-#    out.write(']')
-#    out.close()
+    out.close()
     exit()
-# out.write('[')
   output(parsesent(sent))
-#  ret = parsesent(sent)
-#  print (json.dumps(ret, indent=2))
-#  out.write(json.dumps(ret))
-#  out.write(']')
   undef = []
 
 
