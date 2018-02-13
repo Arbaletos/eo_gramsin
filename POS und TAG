@@ -9,7 +9,6 @@ NPN - Noun, Plural, Nominative
 
 ADJ:
 Tute analogie.
-
 ASN, APN, ASN, APN
 
 ADV:
@@ -19,6 +18,14 @@ ADD -ADVERB DIREKTIVE(-n)
 
 DET:
 Multe de some crzy shit
+
+PRON:
+PRN - mi
+PRA - min
+PRPSN - mia
+PRPSA - mian
+PRPPN - miaj
+PRPPA - miajn
 
 VRB:
 VPR - AS verb present

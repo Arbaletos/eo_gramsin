@@ -1,131 +1,131 @@
-1	Kiam	INTADV
-2	la	DET
-3	ĉiopova	ASN
-4	Mahadevay	PROPN
-5	kreis	VPS
-6	la	DET
-7	belegan	ASA
-8	Hindujon	PROPN,NSA
-9	,	PUNCT
-10	li	PRN
-11	deflugis	VPS
-12	sur	ADP
-13	la	DET
-14	teron	NSA
-15	,	PUNCT
-16	por	ADP
-17	ĝin	PRA
-18	admiri	VIN
-19	.	PUNCT
-1	De	ADP
-2	lia	PRPSN
-3	flugo	NSN
-4	eklevis	VPS
-5	sin	PRA
-6	varma	ASN
-7	,	PUNCT
-8	bonodora	ASN
-9	vento	NSN
-10	.	PUNCT
-1	La	DET
-2	fieraj	APN
-3	palmoj	NPN
-4	klinis	VPS
-5	antaŭ	ADP
-6	Mahadevay	PROPN
-7	siajn	PRPPA
-8	suprojn	NPA
-9	,	PUNCT
-10	kaj	CONJ
-11	ekfloris	VPS
-12	sub	ADP
-13	lia	PRPSN
-14	rigardo	NSN
-15	la	DET
-16	puraj	APN
-17	,	PUNCT
-18	blankaj	APN
-19	,	PUNCT
-20	delikataj	APN
-21	,	PUNCT
-22	aromaj	APN
-23	lilioj	NPN
-24	.	PUNCT
-1	Mahadevay	PROPN
-2	deŝiris	VPS
-3	unu	VDM
-4	el	ADP
-5	la	DET
-6	lilioj	NPN
-7	kaj	CONJ
-8	ĵetis	VPS
-9	ĝin	PRA
-10	en	ADP
-11	la	DET
-12	lazuran	ASA
-13	maron	NSA
-14	.	PUNCT
-1	La	DET
-2	vento	NSN
-3	ekŝancelis	VPS
-4	la	DET
-5	kristalan	ASA
-6	akvon	NSA
-7	kaj	CONJ
-8	enkovris	VPS
-9	la	DET
-10	belegan	ASA
-11	lilion	NSA
-12	per	ADP
-13	blanka	ASN
-14	ŝaŭmo	NSN
-15	.	PUNCT
-1	Minuto	PROPN,NSN
-2	—	PUNCT
-3	kaj	CONJ
-4	el	ADP
-5	tiu	DEMDSN
-6	ĉi	PART
-7	bukedo	NSN
-8	de	ADP
-9	ŝaŭmo	NSN
-10	ekfloris	VPS
-11	la	DET
-12	virino	NSN
-13	—	PUNCT
-14	delikata	ASN
-15	,	PUNCT
-16	bonodora	ASN
-17	kiel	INTADV
-18	la	DET
-19	lilio	NSN
-20	,	PUNCT
-21	facila	ASN
-22	kiel	INTADV
-23	la	DET
-24	vento	NSN
-25	,	PUNCT
-26	ŝanĝa	ASN
-27	kiel	INTADV
-28	la	DET
-29	maro	NSN
-30	,	PUNCT
-31	kun	ADP
-32	beleco	NSN
-33	,	PUNCT
-34	brilanta	ASN
-35	kiel	INTADV
-36	la	DET
-37	ŝaŭmo	NSN
-38	mara	ASN
-39	,	PUNCT
-40	kaj	CONJ
-41	rapide	ADE
-42	pasanta	ASN
-43	,	PUNCT
-44	kiel	INTADV
-45	tiu	DEMDSN
-46	ĉi	PART
-47	ŝaŭmo	NSN
-48	.	PUNCT
+1	Kiam		ADV	INTADV
+2	la	la	DET	DET
+3	ĉiopova	ĉiopov	ADJ	ASN
+4	Mahadeva	Mahadeva	PROPN	PROPN
+5	kreis	kre	VERB	VPS
+6	la	la	DET	DET
+7	belegan	beleg	ADJ	ASA
+8	Hindujon	Hindujo	PROPN	PROPA
+9	,	,	PUNCT	PUNCT
+10	li		PRON	PRN
+11	deflugis	deflug	VERB	VPS
+12	sur	sur	ADP	ADP
+13	la	la	DET	DET
+14	teron	ter	NOUN	NSA
+15	,	,	PUNCT	PUNCT
+16	por	por	ADP	ADP
+17	ĝin	ĝi	PRON	PRA
+18	admiri	admir	VIN	VIN
+19	.	.	PUNCT	PUNCT
+1	De	De	ADP	ADP
+2	lia	li	DET	PRPSN
+3	flugo	flug	NOUN	NSN
+4	eklevis	eklev	VERB	VPS
+5	sin	si	PRON	PRA
+6	varma	varm	ADJ	ASN
+7	,	,	PUNCT	PUNCT
+8	bonodora	bonodor	ADJ	ASN
+9	vento	vent	NOUN	NSN
+10	.	.	PUNCT	PUNCT
+1	La	La	DET	DET
+2	fieraj	fier	ADJ	APN
+3	palmoj	palm	NOUN	NPN
+4	klinis	klin	VERB	VPS
+5	antaŭ	antaŭ	ADP	ADP
+6	Mahadeva	Mahadeva	PROPN	PROPN
+7	siajn	si	DET	PRPPA
+8	suprojn	supr	NOUN	NPA
+9	,	,	PUNCT	PUNCT
+10	kaj	kaj	CONJ	CONJ
+11	ekfloris	ekflor	VERB	VPS
+12	sub	sub	ADP	ADP
+13	lia	li	DET	PRPSN
+14	rigardo	rigard	NOUN	NSN
+15	la	la	DET	DET
+16	puraj	pur	ADJ	APN
+17	,	,	PUNCT	PUNCT
+18	blankaj	blank	ADJ	APN
+19	,	,	PUNCT	PUNCT
+20	delikataj	delikat	ADJ	APN
+21	,	,	PUNCT	PUNCT
+22	aromaj	arom	ADJ	APN
+23	lilioj	lili	NOUN	NPN
+24	.	.	PUNCT	PUNCT
+1	Mahadeva	Mahadeva	PROPN	PROPN
+2	deŝiris	deŝir	VERB	VPS
+3	unu	un	VERB	VDM
+4	el	el	ADP	ADP
+5	la	la	DET	DET
+6	lilioj	lili	NOUN	NPN
+7	kaj	kaj	CONJ	CONJ
+8	ĵetis	ĵet	VERB	VPS
+9	ĝin	ĝi	PRON	PRA
+10	en	en	ADP	ADP
+11	la	la	DET	DET
+12	lazuran	lazur	ADJ	ASA
+13	maron	mar	NOUN	NSA
+14	.	.	PUNCT	PUNCT
+1	La	La	DET	DET
+2	vento	vent	NOUN	NSN
+3	ekŝancelis	ekŝancel	VERB	VPS
+4	la	la	DET	DET
+5	kristalan	kristal	ADJ	ASA
+6	akvon	akv	NOUN	NSA
+7	kaj	kaj	CONJ	CONJ
+8	enkovris	enkovr	VERB	VPS
+9	la	la	DET	DET
+10	belegan	beleg	ADJ	ASA
+11	lilion	lili	NOUN	NSA
+12	per	per	ADP	ADP
+13	blanka	blank	ADJ	ASN
+14	ŝaŭmo	ŝaŭm	NOUN	NSN
+15	.	.	PUNCT	PUNCT
+1	Minuto	Minut	NOUN	NSN
+2	—	—	PUNCT	PUNCT
+3	kaj	kaj	CONJ	CONJ
+4	el	el	ADP	ADP
+5	tiu		DET	DEMDSN
+6	ĉi	ĉi	PART	PART
+7	bukedo	buked	NOUN	NSN
+8	de	de	ADP	ADP
+9	ŝaŭmo	ŝaŭm	NOUN	NSN
+10	ekfloris	ekflor	VERB	VPS
+11	la	la	DET	DET
+12	virino	virin	NOUN	NSN
+13	—	—	PUNCT	PUNCT
+14	delikata	delikat	ADJ	ASN
+15	,	,	PUNCT	PUNCT
+16	bonodora	bonodor	ADJ	ASN
+17	kiel		ADV	INTADV
+18	la	la	DET	DET
+19	lilio	lili	NOUN	NSN
+20	,	,	PUNCT	PUNCT
+21	facila	facil	ADJ	ASN
+22	kiel		ADV	INTADV
+23	la	la	DET	DET
+24	vento	vent	NOUN	NSN
+25	,	,	PUNCT	PUNCT
+26	ŝanĝa	ŝanĝ	ADJ	ASN
+27	kiel		ADV	INTADV
+28	la	la	DET	DET
+29	maro	mar	NOUN	NSN
+30	,	,	PUNCT	PUNCT
+31	kun	kun	ADP	ADP
+32	beleco	belec	NOUN	NSN
+33	,	,	PUNCT	PUNCT
+34	brilanta	brilant	ADJ	ASN
+35	kiel		ADV	INTADV
+36	la	la	DET	DET
+37	ŝaŭmo	ŝaŭm	NOUN	NSN
+38	mara	mar	ADJ	ASN
+39	,	,	PUNCT	PUNCT
+40	kaj	kaj	CONJ	CONJ
+41	rapide	rapid	ADV	ADE
+42	pasanta	pasant	ADJ	ASN
+43	,	,	PUNCT	PUNCT
+44	kiel		ADV	INTADV
+45	tiu		DET	DEMDSN
+46	ĉi	ĉi	PART	PART
+47	ŝaŭmo	ŝaŭm	NOUN	NSN
+48	.	.	PUNCT	PUNCT
 

@@ -90,18 +90,10 @@ def gettag(cword):
     return ['PUNCT']
   if not new_sent:
     if cword.text[0].isupper():
-      nomo = cword.text
-      ACC = False
-      if cword.text.endswith('y'):
+      if cword.text not in names_list:
+        names_list.append(cword.text)
+      if cword.text[-1] == 'y':
         return(['FPROPN'])
-      if nomo.endswith('on'):
-        print ('in putin we trust!')
-        nomo = nomo[:-1]
-        ACC = True
-      if nomo not in names_list:
-        names_list.append(nomo)
-      if ACC:
-        return(['PROPA'])
       return(['PROPN']) 
   new_sent = False
   word = cword.text[:].lower()
@@ -109,7 +101,7 @@ def gettag(cword):
   ret+=korelativoj(word)
   ret+=pronomoj(word)
 
-  if len(word)==1 or cword.text[-1]=='.':
+  if len(word)==1:
     ret = ['SYM']
 
   if word in dict.keys():
@@ -121,43 +113,16 @@ def gettag(cword):
         ret+=[fin_dict[fin]]
   if len(ret)==0:
     if cword.text[0].isupper():
-      nomo = cword.text
-      ACC = False
-      if nomo.endswith('on'):
-        print ('in putin we trust!')
-        nomo = nomo[:-1]
-        ACC = True
-      if nomo not in names_list:
-        names_list.append(nomo)
-      if ACC:
-        return(['PROPA'])
+      if cword.text not in names_list:
+        names_list.append(cword.text)
       return(['PROPN']) 
     return(['X'])
   return ret
 
 def postparse(sent):
   """Adding POS-TAG, lemmas, changing qu and y trick back. id, vort, NPOS"""
-  """next: id vort lemm XPOS NTAG"""
   ret = []
   for ent in sent:
-      if ent[1] in names_list:
-        ent[2] = ['PROPN']
-      if ent[1].endswith('y'):
-        ent[1] = ent[1][0:-1]
-      else:
-        if ent[1].endswith('q'):
-          ent[1] = ent[1][0:-1]+"'"
-      for tag in ent[2]:
-        ret.append([])
-        ret[-1].append(str(ent[0])) 
-        ret[-1].append(ent[1])
-        if tag in convert_dict.keys():
-          ret[-1].append(ent[1][0:0-convert_dict[tag][1]])
-          ret[-1].append(convert_dict[tag][0])
-        else:
-          ret[-1].append(ent[1])
-          ret[-1].append(tag)
-        ret[-1].append(tag)
   return ret
 
 def parsesent(sent):
@@ -168,25 +133,18 @@ def parsesent(sent):
   id = 1
   global new_sent
   new_sent = True
-  comm_dict = {'"':False,"'":False}
   for word in words:
-    ret.append([id,word.text,gettag(word)])
+    ret.append([id,word,gettag(word)])
     id+=1
-    if word.text[0] in comm_dict.keys():
-      if comm_dict[word.text[0]]:
-        comm_dict[word.text[0]] = False
-      else:
-        comm_dict[word.text[0]] = True
-        new_sent = True
-        id = 1
     if word.text[0] in ['.','!','?']:
       new_sent = True
       id = 1
-  return postparse(ret)
+  sent = postparse(sent)
+  return ret
 
 def output(conl):
   for i in conl:
-    s = '\t'.join(i)
+    s = "%d\t%s\t%s" % (i[0],i[1],','.join(i[2]))
     print(s)
     out.write(s+'\n')
   out.write('\n')
@@ -199,38 +157,6 @@ out = ''
 nlp = Esperanto()
 
 dictcsv = open("dict.csv","r")
-
-convert_dict = {   'NSN':['NOUN',1],  'NPN':['NOUN',2],
-'NSA':['NOUN',2],  'NPA':['NOUN',3],  'ASN':['ADJ',1],
-'APN':['ADJ',2],   'ASA':['ADJ',2],   'APA':['ADJ',3],
-'ADE':['ADV',1],   'ADD':['ADV',2],   'VPR':['VERB',2],
-'VFT':['VERB',2],  'VPS':['VERB',2],  'VIN':['VIN',1],
-'VDM':['VERB',1],  'VCN':['VERB',2],  'PRN':['PRON',0],
-'PRA':['PRON',1],  'PRPSN':['DET',1], 'PRPSA':['DET',2],
-'PRPPN':['DET',2], 'PRPPA':['DET',3], 'FPROPN':['PROPN',0],
-'PROPA':['PROPN',1]}
-
-kom = ['INT','IND','TOT','NEG','DEM']
-fin = ['ASN','PRN','DSN','ADV','ADV',\
-  'ADD','DPS','DQU','ADV','ADV','PRA',\
-  'APN','ASA','APA','DPN','DSA','DPA']
-
-for k in kom:
-  for f in fin:
-    if f in ['APN','ASA','DPN','DSA']:
-      convert_dict[k+f] = ['DET',1]
-    elif f in ['DPA','APA']:
-      convert_dict[k+f] = ['DET',2]
-    elif f in ['DSN','ASN','DQU','DPS']:
-      convert_dict[k+f] = ['DET',0]
-    elif f == 'PRA':
-      convert_dict[k+f] = ['PRON',1]
-    elif f == 'PRN':
-      convert_dict[k+f] = ['PRON',0]
-    elif f == 'ADV':
-      convert_dict[k+f] = ['ADV',0]
-    elif f == 'ADD':
-      convert_dict[k+f] = ['ADV',1]
 
 fin_dict = { "'":'NSN',"q":"NSN",
 'o':'NSN','oj':'NPN','on':'NSA','ojn':'NPA',
