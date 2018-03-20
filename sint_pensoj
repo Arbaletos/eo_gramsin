@@ -14,3 +14,118 @@ La varmeta aero estis senmova, plena de frusomeraj bonodoroj, el la floramasoj d
 Ĉasantaj hirundoj tranĉis la aeron sub la serena ĉielo, kaj iliaj movoj estis molaj kiel revoj de laciĝinto.
 
 Okcidente ripozis la suno en kuŝejo de purpuraj, senmovaj nubetoj.
+
+
+Transitive - netransitive verbum.
+
+
+Nominal - NOUN,PRON,PROPN
+	core deps
+nmod - nom, modifying another.
+Ofiso de Kapo |->
+mia kapo <-|
+
+appos - head follower, another nom.
+Vorkutaro, la misto
+
+amod - adjective modifyer of head
+Rosa karno
+
+nummod - num modifyer of head
+
+mi havas tricent rublojn
+
+acl:recl- clause, modifying the head
+li diri cxion |-> kion li sciis
+
+det - det + nom
+case - adp+ noun
+
+N+V:
+Li + havas
+
+nsubj
+ls miangxas cxion
+li- nsubj, cxion - obj
+iobj - additional objes
+
+mi faras laboron - mi=subj
+laboro estas farita = laboro/farita=nsubj:pass
+
+onj:caus - mi faligas
+
+nonverbal(estas, nom+nom,nom+adj)
+	1)Identification(sxi estas mia patrino)
+	2)Attribution(sxi estas charma)
+	3)Location(sxi estas en domo, sxi estas dome)
+	4)Possesion(Libro estas mia)
+	5)Existence(Estas la hundo)
+
+cop (copula):
+Mi estas hundo hundo->estas, estas - cop.
+
+ccomp (clausal complement):
+like an obj for verb or adj.
+li diris ke vi amas lavi diris->amas, amas - ccomp
+li diris komenci labori - ccomp
+mi komencis labori - xcomp
+ccomp -ni ne scias, kiu laboras
+xcomp - ni prcipe scias, ke laboras ni
+
+csubj (clausal subject):
+Kion vi diris estas bona, diris <- estas
+Kion vi volis estis plenumita, csubj:pass
+
+obl (oblique nominal):
+non-core argumentor adjunct.
+- not an acc
+advmod
+adverb modifier of shito
+
+	non-core deps
+expl (Expletive) - some shit, that works as nom, but has no semantic: "Tio estas"
+dislocated - some shit, that does not fits in a structure
+vocative - tion ni scias
+
+	Function Words
+An aux modifies a verbal predicate by adding information relating to tense, aspect, mood, voice, or evidentiality.
+A cop links a nonverbal predicate to its subject and may add information relating to tense, aspect, mood, voice, or evidentiality.
+A mark indicates that the predicate heads a (specific type of) subordinate clause.
+
+Сomplex shit.
+same shit: conjes to first, first is head. punct for punkt, cc for cconj
+THere are orphans.
+Mi amas teon, kajmistborno ankaux.
+
+Clausal Subject:
+csubj
+(Kion sxi faris) estas bona (Kio estas bona, amigo?)
+
+Clausal Complements (Objects)
+ccomp xcomp
+li diras (ke vi amas nagi) (Kion li diras, amigo?)
+
+Adverbial Clause Modifiers
+advcl - modifies predicate
+Li ploris kiam mi trovis lin
+
+Adnominal Clause Modifier
+acl
+
+  Sexond ppredicative.
+
+Mi trovas vin bela - cxiam xcomp
+
+
+Kiel laboros.
+
+unue, ni devas trovi cxiujn grammatikon leidenojn.
+Nominal
+Nominal = det+(adj,...)+[noun,pron,propn]
+Verb (or estas) (not us, u)
+Adj (+participle).
+Do:
+nominuses:
+SUBJ - nomintive
+OBJ - +'N'
+OBL - adp+

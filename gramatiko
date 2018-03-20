@@ -1,0 +1,53 @@
+I nivelo
+
+Noun (N): -o
+Articcle (D): la
+Adjective (A): -f
+Present Vervb(PV): -as
+Conj (CONJ) : kaj 
+Dot (DOT) : .
+
+Artcile (ART) :- D | e
+Full Noun (FN) :- ART + AN
+Adjective group (AG) :- A + AG | e
+Adjective noun (AN) :- AG + N | N + AG (AG = Attributive Adjective)
+Stem (S) :- PV + FN | FN + PV (N = subjective)
+Stem Group (SG) :- S | S + CONJ + S
+Sent(SENT) :- SG + DOT | NUM + DOT
+
+Extraxting Attributive Adjectives, we can unserstand, Which properties can objects have!
+
+II nivelo
+Plural Noun (PN) : -oj
+Plural Adjective (PA) : -aj
+Predicative Verb (PRV) : estas, sxajnas, k.t.p.
+Prep (PREP):- sur | en
+
+Plural Adjective Group (PAG) :- PA + PAG | e
+Noun Group (NG) :- PN | N + CONJ + NG | NG + CONJ + N | NG + CONJ + NG|
+Plural Adjective Noun (PAN) :- PAG + NG | NG + PAG (Attributive adjective affected to each Noun!)
+Full Plural Noun (FPN) :- ART + PAN
+Full Plural or Singular Noun (FPSN) :- FN | FPN
+Stem (S) :- PV + FPN | FPN + PV | PV + FPSN + CONJ + FPSN | FPSN + CONJ + FPSN + PV 
+Verb or Article unaffected!
+
+Predicative Stem (PS) :- FN + PRV + A | A + PRV + FN | FPN + PRV + PA | PA + PRV + FPN | FN + PRV + FN | FPN + PRV + FPN |
+Predicate (PRED) :- SUBJ PRV OBJ /homo estas besto
+Plural Predicate (PPRED) :- PSUBJ PRV POBJ /homoj estas mortaj
+SUBJ :- FN + ARG
+Predicate Argument (ARG) :- ARG + ARG | PREP + FPSN | e
+OBJ :- ARG
+
+
+FIN Gramatiko:
+Noun (N) :- -o
+Plural Noun (PN) :- oj
+Adjective (A) :- -a
+Plural Adjective (PA) :- aj
+Present Verb (PV) :- -as
+
+Conjunctive (CONJ) :- kaj
+Article (D) :- la
+Prep (PREP) :- sur | en
+
+Dot (DOT) : .
