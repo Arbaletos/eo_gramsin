@@ -44,7 +44,7 @@ jen,PART
 jes,PART
 ju,PART
 ĵus,ADV
-kaj,CONJ
+kaj,CCONJ
 ke,SCONJ
 kontraŭ,ADP
 krom,ADP
@@ -72,7 +72,7 @@ pli,PART
 plu,ADV
 plus,CCONJ,PART
 po,ADP
-por,ADP
+por,ADP,SCONJ
 post,ADP
 preskaŭ,PART
 preter,ADP

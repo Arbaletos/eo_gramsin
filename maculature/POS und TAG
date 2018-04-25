@@ -1,0 +1,95 @@
+NOUN:
+SING/PLUR
+ACC/NOM
+
+NSN - Noun, Sing, Nominative
+NPN - Noun, Plural, Nominative
+NSN - Noun, Sing, Accusative
+NPN - Noun, Plural, Nominative
+
+ADJ:
+Tute analogie.
+ASN, APN, ASN, APN
+
+ADV:
+ADV -simple ADVERB
+ADE - ADVERB WITH -E ending
+ADD -ADVERB DIREKTIVE(-n)
+
+PARTICIPLE - PASSIVE, ACTIVE.
+
+DET:
+Multe de some crzy shit
+
+PRON:
+PRN - mi
+PRA - min
+PRPSN - mia
+PRPSA - mian
+PRPPN - miaj
+PRPPA - miajn
+
+VRB:
+VPR - AS verb present
+VPS - OS verb past
+VFT - IS verb future
+VIN - I verb infinitive
+VDM - U verb dominative
+VCN - US Verb conditional
+
+PRN - mi, vi ktp
+PRA - min, vin ktp
+PRPSN - mia, via
+PRPSA - mian, vian
+PRPPN - miaj, viaj
+PRPPA - miajn, viajn
+
+Rest are so.
+
+Open:
+ADJ
+ADV
+INTJ
+NOUN
+PROPN
+VERB
+
+Close:
+ADP (PREP)
+AUX (?)
+CCONJ (KONJ)
+DET (LA)
+NUM
+PART
+PRON
+SCONJ (SUBJ)
+
+Shit
+PUNCT - Punkt
+SYM - Symbol
+X - something shitty
+
+Korelativoj:
+a - DET - ADJ
+aj - DET - ADJ
+an - DET - ADJ
+ajn - DET - ADJ
+am - PRON ADV
+al - PRON ADV
+e - PRON ADV
+el - PRON ADV
+en - PRON LOK ADV
+es - DET
+o - PRON
+on - PRON
+om - DET QUANT
+u - DET
+uj - DET
+un - DET
+ujn - DET - 
+
+KI - INTERROGATIVE - INT
+TI - DEMONSTRATIVE - DEM
+I - INDEFINITE - IND
+CXI - TOTALITY - TOT
+NENI- NEGATIVE - NEG

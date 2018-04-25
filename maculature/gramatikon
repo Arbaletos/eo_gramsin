@@ -1,0 +1,88 @@
+Pre-Processing
+* - 0 or more
++ - 1 or more
+? - 1 or 0
+
+Attributive Noun (ANXY) = la? AXY* NXY | la? NXY AXY+ | APY NXY kaj NXY
+
+
+Base nivelo
+Noun (N): -o, -oj, -on, -ojn
+Adjective (A) : -a, -an, -ajn, -aj
+Verb(VX): -as, -os, -is
+
+
+I nivelo
+
+Article (D): la
+Numeral (NUM): POSX(NUM)
+Conj (CONJ) : kaj 
+Dot (DOT) : .
+
+Stem (S) :- V + AN | AN + V | AN
+Additional Stem (AS) :- KAJ + S + AS | e
+Sent(SENT) :- S + AS + DOT | NUM + DOT 
+
+Extraxting Attributive Adjectives, we can unserstand, Which properties can objects have!
+Extraxting Verbs, We can understand which verbs are intransitive!
+
+II nivelo
+Plural Noun (NP) : -oj
+Plural Adjective (AP) : -aj
+Predicative Verb (PV) : estas, sxajnas (not all verbs are predicative!)
+Prep (PREP):- sur | en
+Plural Attributive Adjective(ANP) - APY* NXY kaj NZY | NXY kaj NZY APY+
+
+Predicate Stem: SUBJS PV OBJS | SUBJP PV OBJP
+
+SUBJS = ARG + ANSN + ARG
+OBJS = 
+ARG = EPS | ARG
+ARGP = 
+SARG* + NOUN + SARG 
+PARG = SARG | kaj NOUN
+
+
+Shit for counting:
+1)Attributes (What can be which?)
+2)Actions (What can do what?)
+3)Predicates (What is what?)
+
+
+shablonoj:
+VERBS - 
+TRANSITIVE - Need Accusative
+InTransitive - Doesn't need Accusative
+Predicative - Need ankay nominativon
+
+la A* + N + A* - Attributive Nouns, A - Attributive Adjectives
+AN + V, V + AN - Sentence, AN - Subject, V - Intransitive Verb
+AN + V + A - Predicate Sentence, A - predicate adjective
+AN + V + N - N - Predicate Noun
+PREP + AN - Argument
+AN_N + V + AN_A - v - Transitive Verb, AN_A - Direct Object
+Predicate NOUN or ADJ is never AKKUZATIVE.
+V + CV - CV - Complementary VERB (i)
+
+Interrogate:
+Cxu + Stem
+
+nek N nek N
+nek V nek V
+nek A nek A
+
+Sintaxis.
+N kaj N
+A kaj A
+kaj N kaj N
+kaj V kaj V
+kaj A kaj A
+
+NV = ne V
+
+Sent = Num + Dot
+Sent = AN Dot (Deklarative sent)
+Sent = S + AS + DOT
+AS = E | SHITMIX + S + AS|
+SHITMIX = COMMA | COMM, CONJ | KAJ
+A can be in a commshit.

@@ -1,0 +1,48 @@
+Правило: Не нужно оптимизировать то, что пока не работает.
+Создадим базовое дерьмо, потом же подумаем, что делать.
+I nivelo
+
+Noun (N): -o
+Article (D): la
+Adjective (A): -a
+Present Verb(PV): -as
+Numeral (NUM): POSX(NUM)
+Conj (CONJ) : kaj 
+Dot (DOT) : .
+
+Artcile (ART) :- D | e
+Full Noun (FN) :- ART + AN
+Adjective group (AG) :- A + AG | e
+Adjective noun (AN) :- AG + N | N + AG (AG = Attributive Adjective)
+Stem (S) :- PV + FN | FN + PV
+Additional Stem (AS) :- KAJ + S + AS | e
+Sent(SENT) :- S + AS + DOT | NUM + DOT | FN + DOT
+
+Extraxting Attributive Adjectives, we can unserstand, Which properties can objects have!
+
+II nivelo
+Plural Noun (PN) : -oj
+Plural Adjective (PA) : -aj
+Predicative Verb (PRV) : estas,  sxajnas (not all verbs are predicative!)
+Prep (PREP):- sur | en
+
+Plural Full Noun (PFN) :- ART + PAN
+Plural Adjective group (PAG) :- PA + PAG | e
+Plural Adjective noun (PAN) :- PAG + PN | PN + PAG (PAG = Attributive Adjective)
+Stem (S) :- PV + NG | NG + PV | NG (N = subjective, PV - ROOT)
+NG (Noun Group) :- PFN | UFN + CONJ + UFN 
+UFN (Undefined Full Noun) :- PFN | FN
+
+Predicative Stem (PS) :- FN + PRV + A | NG + PRV + PA | FN + PRV + AN | PFN + PRV + PAN |
+
+Predicate (PRED) :- ARG SUBJ ARG PRV ARG OBJ ARG 
+Plural Predicate (PPRED) :- ARG PSUBJ ARG PRV ARG POBJ ARG
+SUBJ :- FN
+PUBJ :- PS
+Predicate Argument (ARG) :- PREP + FN + ARG | e
+Bothings
+
+
+
+Easyficator: Makes some shit in more excellent non-shit units
+1)ANXX - Attributive Noun
