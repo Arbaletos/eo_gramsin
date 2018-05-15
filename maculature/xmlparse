@@ -1,0 +1,11 @@
+#!/usr/bin/python3
+#coding=utf8
+
+import xml.etree.ElementTree as etree
+
+f_dict = {}
+
+tree = etree.parse('corp/in/fundamenta-ekzercaro.xml')
+root = tree.getroot()
+for s in tree.iter(tag='{http://www.tei-c.org/ns/1.0}p'):
+  print (s.text,'\n')

@@ -16,7 +16,7 @@ def numparse(instr):
   edict = {'unu':1,'du':2,'tri':3,'kvar':4,'kvin':5,'ses':6,'sep':7,'ok':8,'naŭ':9}
   mdict = {'dek':10,'cent':100}
   cstr = instr[:]
-  if len(kombiki(cstr,edict,mdict))>0:
+  if len(kombiki(cstr,edict,mdict))>0 or len(kombiki(cstr,mdict,edict))>0 or cstr in edict.keys() or cstr in mdict.keys():
     return ['NUM']
   return [] 
 
@@ -35,10 +35,10 @@ def korelativoj(instr):
   cstr = instr[:]
   kom_dict = {'ki':'INT','i':'IND','ĉi':'TOT','neni':'NEG','ti':'DEM'}
   fin_dict = {'a':'ASN', \
-    'o':'PRN','u':'DSN', \
+    'o':'PRUN','u':'DSN', \
     'e':'ADV','el':'ADV','en':'ADD', \
     'es':'DPS','om':'DQU', \
-    'am':'ADV','al':'ADV','on':'PRA', \
+    'am':'ADV','al':'ADV','on':'PRUA', \
     'aj':'APN','an':'ASA',\
     'ajn':'APA','uj':'DPN',\
     'un':'DSA','ujn':'DPA'}
@@ -47,16 +47,16 @@ def korelativoj(instr):
 def pronomoj(instr):
   """Parses pronouns"""
   cstr = instr[:]
-  kom_dict = {'m':'PR',
-    'v':'PR', \
-    'c':'PR', \
-    'l':'PR', \
-    'ŝ':'PR', \
-    'ĝ':'PR', \
-    's':'PR', \
-    'n':'PR', \
-    'il':'PR', \
-    'on':'PR'}
+  kom_dict = {'m':'PRS',
+    'v':'PRU', \
+    'c':'PRS', \
+    'l':'PRS', \
+    'ŝ':'PRS', \
+    'ĝ':'PRS', \
+    's':'PRS', \
+    'n':'PRP', \
+    'il':'PRP', \
+    'on':'PRP'}
   fin_dict = {'i':'N', \
     'in':'A', \
     'ia':'PSN', \
@@ -139,7 +139,8 @@ def postparse(sent):
   """Adding POS-TAG, lemmas, changing qu and y trick back. id, vort, NPOS"""
   """next: id vort lemm XPOS NTAG"""
   ret = []
-  for ent in sent:
+  for ent_i in range(len(sent)):
+      ent = sent[ent_i]
       if ent[1] in names_list:
         ent[2] = ['PROPN']
       if ent[1].endswith('y'):
@@ -147,16 +148,22 @@ def postparse(sent):
       else:
         if ent[1].endswith('q'):
           ent[1] = ent[1][0:-1]+"'"
+      if mark and len(ent[2])>1:
+        curs = sent+[[0,0,['$']]]
+        ps = convert_dict.get(curs[ent_i-1][2][0],[curs[ent_i-1][2][0]])[0]
+        ns = convert_dict.get(curs[ent_i+1][2][0],[curs[ent_i+1][2][0]])[0]
+        freq = [trigram[(ps, convert_dict.get(ent[2][x],[ent[2][x]])[0],ns)] for x in range(len(ent[2]))]
+    
+        ent[2] = [ent[2][freq.index(max(freq))]]
       for tag in ent[2]:
+        if not tag: continue
         ret.append([])
         ret[-1].append(str(ent[0])) 
-        ret[-1].append(ent[1])
-        if tag in convert_dict.keys():
-          ret[-1].append(ent[1][0:0-convert_dict[tag][1]])
-          ret[-1].append(convert_dict[tag][0])
-        else:
-          ret[-1].append(ent[1])
-          ret[-1].append(tag)
+        ret[-1].append(ent[1].lower())
+
+        ret[-1].append(ent[1][0:len(ent[1])-convert_dict.get(tag,[0,0])[1]].lower())
+        ret[-1].append(convert_dict.get(tag,[tag])[0])
+
         ret[-1].append(tag)
   return ret
 
@@ -189,9 +196,11 @@ def output(conl):
     s = '\t'.join(i)
     print(s)
     out.write(s+'\n')
-  out.write('\n')
-#|-------------------------->╔═╦═╗║ ║ ║╠═╬═╣╚═╩═╝
+#  out.write('\n')
 
+#|-------------------------->╔═╦═╗║ ║ ║╠═╬═╣╚═╩═╝
+from time import time
+now = time()
 dict = {}
 names_list = []
 undef = []
@@ -204,11 +213,15 @@ convert_dict = {   'NSN':['NOUN',1],  'NPN':['NOUN',2],
 'NSA':['NOUN',2],  'NPA':['NOUN',3],  'ASN':['ADJ',1],
 'APN':['ADJ',2],   'ASA':['ADJ',2],   'APA':['ADJ',3],
 'ADE':['ADV',1],   'ADD':['ADV',2],   'VPR':['VERB',2],
-'VFT':['VERB',2],  'VPS':['VERB',2],  'VIN':['VIN',1],
-'VDM':['VERB',1],  'VCN':['VERB',2],  'PRN':['PRON',0],
-'PRA':['PRON',1],  'PRPSN':['DET',1], 'PRPSA':['DET',2],
-'PRPPN':['DET',2], 'PRPPA':['DET',3], 'FPROPN':['PROPN',0],
-'PROPA':['PROPN',1]}
+'VFT':['VERB',2],  'VPS':['VERB',2],  'VIN':['VERB',1],
+'VDM':['VERB',1],  'VCN':['VERB',2],  
+'PRSN':['PRON',0], 'PRPN':['PRON',0],'PRUN':['PRUN',0],
+'PRSA':['PRON',1], 'PRPA':['PRON',1],'PRUA':['PRON',1],
+'PRSPSN':['DET',1],'PRPPSN':['DET',1],'PRUPSN':['DET',1], 
+'PRSPSA':['DET',2],'PRPPSA':['DET',2],'PRUPSA':['DET',2],
+'PRSPPN':['DET',2],'PRPPPN':['DET',2],'PRUPPN':['DET',2], 
+'PRSPPA':['DET',3],'PRPPPA':['DET',3],'PRUPPA':['DET',3],
+'FPROPN':['PROPN',0], 'PROPA':['PROPN',1]}
 
 kom = ['INT','IND','TOT','NEG','DEM']
 fin = ['ASN','PRN','DSN','ADV','ADV',\
@@ -244,32 +257,56 @@ for line in dictcsv:
   dict['mal'+c[0]] = c[1:]
 dictcsv.close()
 
-for i in range (1, len(sys.argv)):
-  filename = 'corp/in/'+sys.argv[i]+'.xml'
-  out = open('out/'+sys.argv[i]+'.con',"w")
-  tree = etree.parse(filename)
-  root = tree.getroot()
-  for s in tree.iter(tag = TEI+'p'):
-    text = s.text
-    for t in s:
-      c = t.text.split()
-      for i in range(len(c)):
-        c[i] = c[i]+'y'
+mark = False
+
+args = sys.argv[1:]
+trigram = {}
+bigram = {}
+if '-m' in args:
+  mark = True
+  args = args[1:]
+  with open('mark/trigram.mrk') as f:
+    for line in f:
+      if line.endswith('\n'): line = line[:-1]
+      arr = line.split(' ')
+      trigram[(arr[0],arr[1],arr[2])] = int(arr[3])
+    
+for f in (args):
+  if f.endswith('.xml'):
+    filename = 'xml/in/'+f
+    out = open('con/in/'+f+'.con',"w")
+    tree = etree.parse(filename)
+    root = tree.getroot()
+    for s in tree.iter(tag = TEI+'p'):
+      text = s.text
+      if text==None: text = ''
+      for t in s:
+        if t.text:
+          c = t.text.split()
+          for i in range(len(c)):
+            c[i] = c[i]+'y'
 #It is 'y-trick' - as a q-trick, aber anderer.
-      text+=' '.join(c)
-      text+=t.tail
-    print (text)
-    if len(text) > 0:
-       print(text)
-       output(parsesent(text))
-  out.close
-out = open('out/stdout.out',"w")
-while True:
-  sent = input("Input esperanto sentense or q to exit!\n")
-  if (sent=='q'):
+          if c: text+=' '.join(c)
+          if t.tail: text+=t.tail
+      if len(text) > 0:
+          output(parsesent(text))
     out.close()
-    exit()
-  output(parsesent(sent))
-  undef = []
+  else:
+    with open('txt/in/'+f) as in_f:
+      out = open('con/in/'+f+'.con','w')
+      for line in in_f:
+        if line.endswith('\n'): line = line[:-1]
+        output(parsesent(line))
+      out.close()
 
+if not args:
+  out = open('con/in/stdout.con',"w")
+  while True: 
+    sent = input("Input esperanto sentense or q to exit!\n")
+    if (sent=='q'):
+      out.close()
+      exit()
+    output(parsesent(sent))
+    undef = []
 
+print('Time elapsed:'+str(time() - now))

@@ -2,6 +2,20 @@
 #coding=utf-8
 
 import sys
+from copy import copy
+from conlib import *
+from time import time
+
+def print_l(li,delim = ','):
+  return delim.join([str(l) for l in li])
+
+def kon(li):
+  """Conjunction of list values"""
+  return len(li)==sum([bool(x) for x in li])
+
+def dnf(li):
+  """count li as dnf and return result"""
+  return sum([kon(x) for x in li])>0
 
 class Sent:
   """Sentence, consists of phrases"""
@@ -18,12 +32,23 @@ class Sent:
 
   def struct(self):
     return ' '.join(['['+str(f)+']' for f in self.frazoj])
+
+  def parse(self,all,good):
+    if not self.frazoj: return all,good 
+    par = self.frazoj[0].parse(None)
+    if par:good+=1
+    all+=1
+    for i in range(len(par)):
+      print('Variant '+str(i+1))
+      print(print_l(par[i],'\n'))
+    return all,good
+     
+   # return self.frazoj[0].parse(None)
  
   def fragmentu(self, vortoj):
-
     def rule(vort):
       rules = [('vort',','), 
-               ('pos','CONJ'), 
+               ('pos','CCONJ'), 
                ('pos','SCONJ')]
       for r in rules:
         if vort[r[0]] == r[1]: return True
@@ -37,8 +62,13 @@ class Sent:
         cur.clear()
       cur.append(v)
     ret.append(Frazo(cur))
+    nret = [c for c in ret if c.tokens]
+    ret = nret
+    for f in range(len(ret)):
+      curret = ret+[None]
+      ret[f].pred = curret[f-1]
+      ret[f].next = curret[f+1]
     return ret
-
 
 class Frazo:
   """Phrase, consists of words"""
@@ -47,29 +77,179 @@ class Frazo:
     self.simpligu(vortoj[:])
 
   def __str__(self):
-    return ' '.join(['|'+str(t)+'|' for t in self.tokens])
+    return print_l(self.tokens,' ')
 
+  def struct(self):
+    return ' '.join(['|'+str(t)+'|' for t in self.tokens])
+    
+
+  def parse(self,cont):
+    ret = []
+
+    if not cont: cont = Context()
+    adp = 0 
+    for t in self.tokens:
+      """Roles Putinismus!"""
+      if t.pos == 'ADP':
+        adp = 1
+        cont.add(t,'COM')
+      elif adp and t.type == 'NOUN': cont.add(t,'COM_NOUN')
+      elif adp and t.type == 'ADJ': cont.add(t,'COM_ADJ')
+      elif t.type == 'NOUN':
+        if t.case=='ACC': cont.add(t,'OBJ')
+        elif t.case=='NOM': cont.add(t,'SUBJ')
+        else: return False
+      elif t.type == 'ADJ': cont.add(t,'DESC')
+      elif t.type == 'ADV': cont.add(t,'OBS')
+      elif t.type == 'VERB':
+        if t.mode == 'IND': cont.add(t,'ROOT')
+        if t.mode =='IND':  cont.add(t,'INF')
+
+    if cont.validate():
+      if self.next:
+#        print('Context Enrich')
+        next = self.next.parse(Context(cont))
+#        if next: print('Enrich True')
+#        else: print('Enrich False')
+        for n in next:
+          ret.append(n)
+
+        if cont.finished():
+#          print('Complex Fork')
+          next = self.next.parse(None)
+#          if next: print('Complex Fork True')
+#          else: print('Complex Fork False')
+          for n in next:
+            ret.append([cont.finish()]+n)
+        return ret
+
+      if cont.finished():    
+        return [[cont.finish()]]
+    return []
+   
   def simpligu(self,vortoj):
     self.tokens = []
     cur = None
+    t_id = 0
+    print(print_l(vortoj,' '))
     for v in vortoj:
       new = True
-      if v.pos=='NOUN':
-        if cur and cur.pos in ['DET','ADJ'] and cur.cc_match(v):
+      if v.type=='NOUN':
+        if cur and cur.type in ['DET','ADJ'] and cur.cc_match(v):
           cur.add(v,True)
           new = False
-      elif v.pos=='ADJ':
-        if cur and cur.pos in ['NOUN','DET','ADJ'] and cur.cc_match(v) and not cur.full:
+      elif v.type=='ADJ':
+        if cur and cur.type in ['NOUN','DET','ADJ'] and cur.cc_match(v) and not cur.full:
           cur.add(v,cur.pos!='NOUN')
           cur.full = True
           new = False
           cur.full = True
-      if new and v.pos in ['NOUN','ADJ','VERB','SCONJ','ADP','ADV','DET']:
-        cur = Token([v]) 
+      if new and v.type in ['NOUN','ADJ','VERB','SCONJ','ADP','ADV','DET','PREP']:
+        cur = Token(t_id,[v]) 
+        t_id+=1
         self.tokens.append(cur)
-        if v.pos == 'ADJ': cur.full = True
-        if v.pos == 'DET': cur.det = True
+        if v.type == 'ADJ': cur.full = True
+        if v.type == 'DET': cur.det = True
 
+class Context:
+  """Phrase shit"""
+
+  def __init__(self,copy=None):
+    roles = ['OBJ','SUBJ','ROOT','DESC','COM','INF','COM_DESC']
+    if copy:
+      self.comps = {r:copy.comps[r][:] for r in roles}
+      self.pat = copy.pat
+      self.verb = copy.verb[:]
+    else:
+      self.comps = {r:[] for r in roles}
+      self.pat = ''
+      self.verb = ['TRAN','INTR','PRED']
+
+  def __str__(self):
+    return self.pat + ';\n' + \
+           '  '+self.print_key('ROOT')+"; TYPE:"+print_l(self.verb)+";\n" + \
+           '  '+self.print_key('SUBJ')+';\n' + \
+           '  '+self.print_key('OBJ')+';\n' + \
+           '  '+self.print_key('DESC')+';\n' + \
+           '  '+self.print_key('COM')+';\n'
+  
+  def print_key(self,key):
+    
+    return key+':'+print_l(self.comps[key])
+
+  def up_pat(self,arg):
+    if not self.pat.endswith(arg):
+      self.pat = self.pat+arg
+
+  def add(self,t,role):
+    try:
+      if role=='SUBJ': self.up_pat('N')
+      if role=='ROOT': 
+        if self.pat=='NV': self.pat+='V'
+        else: self.up_pat('V')
+      if role.startswith('COM_'):
+        self.comps['COM'][-1].add(t)
+      elif role.startswith('COM'):
+        self.comps[role].append(Token(t.ind,t.vortoj[:]))
+      else:
+        self.comps[role].append(t)
+    except:
+      self.comps[role] = [t]
+
+  def validate(self):
+    obj = self.obj_est()
+    unvalid = [[obj,self.pat=='NVN'],
+               [len(self.pat)>=3,self.pat not in ['NVV','VNV','NVN']]]
+    return (not dnf(unvalid))
+        
+  def finished(self):
+    af = self.adj_full()
+    obj = self.obj_est()
+    root = bool(self.comps['ROOT'])
+    subj = bool(self.comps['SUBJ'])
+
+    self.fin = {'PRED':[self.pat == 'NVN', 
+            af, not obj, root, subj],
+           'INTR':[self.pat in ['NV','NVV','VN','VNV'], 
+            af, not obj, root,subj],
+           'TRAN':[self.pat in ['NV','VN','VNV','NVV'], 
+            af, obj, root, subj]
+          }
+
+    self.verb = [k for k in self.fin.keys() if kon(self.fin[k])]
+
+    return self.validate() and dnf(list(self.fin.values()))
+ 
+  def finish(self):
+    if not self.finished(): return []
+    return self
+
+  def obj_est(self):
+    c = self.comps
+    if c['OBJ']: return True
+    for d in c['DESC']:
+      if d.case=='ACC':
+        return True
+    return False
+
+  def adj_full(self):
+    c = self.comps
+    for d in c['DESC']:
+      case = 'SUBJ'
+      if d.case=='ACC':
+        case = 'OBJ'
+      adj = self.adj_count(d.count,case)
+      if not adj: return False
+    return True
+
+  def adj_count(self,count,case):
+    if count=='SING' and not len([t for t in self.comps[case] if t.count=='SING']):
+      return False 
+    if count=='PLUR' and (len(self.comps[case])<1 or \
+       self.comps[case][0].count != 'PLUR'):
+      return False
+    return True
+ 
 class Token:
   """Word, consits of grammems"""
 
@@ -81,11 +261,12 @@ class Token:
   def cc_match(self,v):
     return self.main.cc_match(v)
 
-  def __init__(self, vortoj, mvort=0):
+  def __init__(self, t_id, vortoj, mvort=0):
     self.vortoj = vortoj
     self.main = vortoj[mvort]
     self.det = False
     self.full = False
+    self.ind = t_id
 
   def __str__(self):
     return ' '.join(str(v) for v in self.vortoj)
@@ -103,13 +284,33 @@ class Token:
 
 class Vort:
   """Word, consits of grammems"""
-  sing_tag = ['NSN','NSA','ASN','ASA']
-  plur_tag = ['NPN','NPA','APN','APA']
-  nom_tag = ['NSN','NPN','ASN','APN']
-  acc_tag = ['NSA','NPA','ASA','APA']
-
+  #dict for get grams from tagname
+  gram_tag = {} 
+             
   verb_mode = {'VPR':'IND','VPS':'IND','VFT':'IND','VIN':'INF','VDM':'IMP','VCN':'CON'}
   verb_time = {'VPR':'PRESENT','VPS':'PAST','VFT':'FUTURE'}
+  counts = {'S':'SING','P':'PLUR','U':'UNDEF'}
+  cases = {'N':'NOM','A':'ACC','U':'UNDEF'}
+
+  def get_gram(s):
+    try:
+      return s.gram_tag[s.tag]
+    except:
+      ng = ['UNDEF','UNDEF',s.pos,'UNDEF','UNDEF']
+      #      Count,  Case,   Type,   Mode,   Time
+      if s.pos in ['NOUN','ADJ','PRON']:
+        print ("Vort:"+s.vort+"Shit's tag:"+s.tag)
+        ng[0] = s.counts[s.tag[-2]]
+        ng[1] = s.cases[s.tag[-1]]
+        if s.pos=='PRON':
+          if len(s.tag)==4: ng[2] = 'NOUN'
+          else: ng[2] = 'ADJ'
+      elif s.pos == 'VERB':
+        ng[3] = s.verb_mode[s.tag]
+        ng[4] = s.verb_time.get(s.tag,'UNDEF')
+      ng = tuple(ng)
+      s.gram_tag[s.tag] = ng
+      return ng
 
   def __init__(self, conlu):
     self.vort = conlu[1]
@@ -117,19 +318,7 @@ class Vort:
     self.pos = conlu[3]
     self.tag = conlu[4]
 
-    if self.tag in self.sing_tag: self.count = 'SING'
-    elif self.tag in self.plur_tag: self.count = 'PLUR'
-    else:  self.count = 'UNDEF'
-
-    if self.tag in self.nom_tag: self.case = 'NOM'
-    elif self.tag in self.acc_tag: self.case = 'ACC'
-    else:  self.case = 'UNDEF'
-    
-    if self.tag in self.verb_mode.keys(): self.mode = self.verb_mode[self.tag]
-    else: self.mode = 'UNDEF'
-      
-    if self.tag in self.verb_time.keys(): self.time = self.verb_time[self.tag]
-    else: self.time = 'UNDEF'
+    self.count, self.case, self.type, self.mode, self.time = self.get_gram()
 
   def cc_match(self,v):
     """Match lau case and count"""
@@ -145,301 +334,19 @@ class Vort:
   def __setitem__(self, key, value):
     self.__dict__[key] = value
 
-def getsent(inp):
-  for i in range(1,len(inp)):
-    if inp[i][0]=='1':
-      return inp[:i]
-  return inp[:]
-
-def t_in(i,listo,ind):
-  """True, if listo[a][ind] = i for at least one element."""
-  for a in listo:
-    if a[ind]==i:
-      return True
-  return False
-
-def partparse(inputo):
-  def part(inputo):
-    ret = [[]]
-    for i in inputo:
-      if i['vort'] == ',':
-        if len(ret[cur])>0:
-          cur+=1
-          ret.append([])
-      elif i['pos'] == 'CONJ' or i['pos'] == 'SCONJ':
-        cur+=1
-        ret.append([i])
-      else:
-        ret[cur].append(i)
-    return ret
-
-  def simple(parto):
-    def finish(cur,cur_gram,ekz):
-      if len(cur) > 0:
-        if len(cur) > 1 or cur[0]['vort']!='la':
-          new = {'DEF':False}
-          if cur[0]['vort'] == 'la':
-            new['DEF'] = True
-          gram = cur[len(cur)-1]['tag'][1:]
-          if 'A' in cur_gram:
-            new['pos'] = 'ADJ'
-            new['tag'] = 'A'+gram
-          if 'N' in cur_gram:
-            new['FULL'] = False
-            if 'pos' in new.keys():
-              new['FULL'] = True
-            new['pos'] = 'NOUN'
-            new['tag'] = 'N'+gram
-          count = {'S':'SING','P':'PLUR','N':'NOM','A':'ACC'}
-          new['count'] = count[gram[0]]
-          new['case'] = count[gram[1]]
-          new['vort'] = [i['vort'] for i in cur]
-          new['stem'] = [i['stem'] for i in cur]
-          ekz.append(new)
-        else:
-          ekz.append(cur[0])
-
-    ret = []
-    print('-')
-    for p in parto:
-      ekz = []
-      cur = []
-      next = []
-      cur_gram = []
-      for w in p:
-        if len(next) > 0:
-          est = next.pop()
-          if est == 'LA' and w['vort'] == 'la':
-            cur+=[w]
-            continue
-          elif est == 'LA':
-            est = next.pop()
-          if est == 'A' and w['pos']=='ADJ':
-            gram = 'N' + w['tag'][1:]
-            next = [gram,w['tag']]
-            cur+=[w]
-#            cur+=[w]
-            cur_gram += ['A']
-            continue
-          if est == 'A' and w['pos']=='NOUN':
-            gram = 'A' + w['tag'][1:]
-            next = [gram]
-            cur+=[w] 
-            cur_gram += ['N']
-            continue
-          if est == w['tag']:
-            next.push(est)
-            cur+=[w]
-            cur_gram += ['A']
-            continue
-          if est.startswith('A') and w['pos']=='NOUN':
-            if len(next)>0 and est[1:]==w['tag'][1:]:
-              cur+=[w]
-              cur_gram += ['N']
-              next.append('PUTIN')
-              continue
-          next = []
-          finish(cur,cur_gram,ekz)
-          cur = []
-          cur_gram = []
-        if w['pos'] == 'ADP':
-          next = ['A','N','A','LA']
-          ekz +=[w]
-#          ekz += [('ADP',w)]
-        elif w['vort'] == 'la':
-          next = ['A','N','A']
-          cur = [w]
-        elif w['pos']=='NOUN':
-          cur_gram+=['N']
-          next = ['A'+w['tag'][1:]]
-          cur = [w]
-        elif w['pos']=='ADJ':
-          next = ['N'+w['tag'][1:],w['tag']]
-          cur_gram+=['A']
-          cur = [w]
-        elif w['pos']=='VERB':
-#          ekz += [('VERB',w)]
-          ekz +=[w]
-          last = ekz[-1]
-          time = {'VPR':'PRESENT','VFT':'FUTURE','VPS':'PAST'}
-          if w['tag'] in time.keys():
-            last['type'] = 'IND'
-            last['time'] = time[w['tag']]
-          else:
-            type = {'VIN':'INF','VDM':'IMP','VCN':'CON'}
-            last['type'] = type[w['tag']]
-      finish(cur,cur_gram,ekz)
-#      aro = [i[0] for i in ekz]
-       
-#      print(aro) 
-      ret.append(ekz) 
-    return (ret)
-
-    """ in[] - list of input symbols. est[] - already parsed. need{'}- what symbols which sentpartneed. alt - all other variants. est: [{'ROOT':root,'SUBJ':subj,'TREE':[]}]"""
-    """Флективность: 3 варианта глаголов, различная глубина предлогов, различные связки с некстярней"""
-    cur = inp[:]
-    imp = []
-    exp = []
-    est = []
-    for i in range(len(inp)):
-      if len(est) >= 0:
-        roots = ['NONE','TRAN','PRED','INTR']
-        rooti = {'TRAN':1,'PRED':2,'INTR':3}
-        adp = 0
-        nom = 0
-        acc = 0
-        verb = 0
-        root = -1
-        subj = -1
-        obj = -1
-        role = '' 
-        strukt = []
-        est.append(strukt)
-        for w in range(len(inp[i])):
-          """Первая часть. Частный анализ."""
-          word = inp[i][w]
-          curw = cur[i][w]
-
-          if word['pos'] == 'ADP':
-            """Cистема поиска предлогов может и получше будет. Пока что - глубина 1."""
-            adp +=1
-            role = 'COM'
-
-          elif word['pos'] == 'NOUN':
-            """Существительное. Может быть как объектом, так и субъектом."""
-            if adp > 0:
-              curw['role'] = 'COM'
-              adp = 0
-            else:
-              if nom==0 and word['case'] == 'NOM' and verb != 2:
-                role = 'SUBJ'
-                nom+=1
-                subj = w
-              elif word['case'] == 'ACC' and acc==0 and verb in [0,1]:
-                role = 'OBJ'
-                acc = 1
-                obj = w
-              elif nom==1 and word['case'] == 'NOM' and verb == 2:
-                role = 'OBJ'
-                nom+=1
-                obj = w
-              else:
-                return [] 
-
-          elif word['pos'] == 'ADJ':
-            """Определение."""
-            role = 'DESC'
-
-          elif word['pos'] == 'VERB': 
-            if 'trans' not in word.keys():
-              for r in [1,2,3]:
-                word['trans'] = roots[r]
-                ret = parse(cur,est,need)
-                if ret:
-                  return ret
-              return []
-            if word['type'] == 'INF':
-              """Инфинитив. Может стать объектом в транзитивном предложении."""
-              """Или же субъектом в предикативном предложении (Убивать - плохо)"""
-              role = 'INF'
-            elif word['type'] == 'IND':
-              role = 'ROOT'
-              verb = rooti[curw['trans']]
-              root = w
-          curw['role'] = role
-          strukt.append((role,curw)) 
-          """Вторая часть - полный анал из"""
-
-        if root>=0:
-          mem = strukt[root][1]
-          for ind in range(len(strukt)):
-            """Infinitives alignment"""
-            s = strukt[ind]
-            if s[0] == 'INF':
-              if mem['trans'] == 'TRAN':
-                mem = s[1]
-              elif mem['trans'] == 'PRED':
-                s[1].role = 'SUBJ'
-                strukt[ind][0] = 'SUBJ'
-              else:
-                return []
-          if mem['trans'] == 'TRAN':
-            """Transitivus putinus"""
-            if obj>=0 and strukt[obj][1]['case']!='ACC':
-              return []
-            if obj<0:
-              imp.append(('OBJ',{'case':'ACC'},(i,root)))
-            if subj<0:
-              imp.append(('SUBJ',{'case':'NOM'},(i,root)))
-          if mem['trans'] == 'INTR':
-            if obj>=0:
-              return []
-            if subj<0:
-              imp.append(('SUBJ',{'case':'NOM'},(i,root)))
-          if mem['trans'] == 'PRED':
-            if subj<0:
-              return []
-            if obj>=0 and strukt[obj][1]['case']=='ACC':
-              return []
-            if obj<0:
-              imp.append(('OBJ',{'case':'NOM'},(i,root)))
-        else:
-          """Выбираем куда присобачити безкорневое предложение"""
-          imp.append(('ROOT',{},(i)))    
-        for s in strukt:
-          """Находим все голые дескрипторы"""
-          if s[0] == 'DESC':
-            father = False
-            for s2 in strukt:
-              if s2[1]['pos'] == 'NOUN' and s2[1]['case'] == s[1]['case'] and s2[1]['count'] == s[1]['count']:
-                father = True
-            if not father:
-              if s[1]['case'] == 'NOM':
-                imp.append(('SUBJ',{'case':'NOM'},(i)))
-              else:
-                imp.append(('OBJ',{'case':'ACC'},(i)))
-               
-    #Часть 3:проводим совмещение желаемого с сущим
-    if len(imp)>0:
-#      print(est)
-      return []
-    print(cur)
-    return cur
- 
-  def makesent(inp):
-    ret = ''
-    for i in inp:
-      ret+=i['vort']+' '
-    return ret
-    
-  def printres(pars):
-    for i in range(len(pars)):
-      print('Sentence part 1:')
-      sp = pars[i]
-      root = ''
-      subj = ''
-      obj = ''
-      if 'ROOT' in sp:
-        root = 'Root: '+ sp['TREE'][sp['ROOT']]['in']['vort']
-      print(root+subj+obj)
-       
-  sent = simple(part(inputo))
-  print(makesent(inputo))
-  sent = (parse(sent,[],[]))
-  for p in sent:
-    for w in p:
-      print(w['vort'])
 
 def main():
+  now = time()
+  if len(sys.argv)<2:  filename = 'nivelo3'
+  else: filename = sys.argv[1]
   rules = {'COLON':[['VORT/:']],'COMMA':[['VORT/,']]}
-  inp = list(map(lambda x:x.split('\t'),open('sint_in/nivelo2.con').read().split('\n')))
-
+  inp = parsecon('con/in/'+filename+'.con')
   #KOSTYL
   inputo = [('1','NUM'),('.','PUNCT')]
   outputo = []
   mag = ['SENT']
 
-  for line in open('sint_in/gram'):
+  for line in open('gram'):
     if line[len(line)-1]=='\n':
       line = line[:-1]
     head = line.split(':')[0]
@@ -451,19 +358,17 @@ def main():
       rules[head] = [tail]
 
   #print(rules)
+  all = 0
+  good = 0
   while len(inp)>0:
     mag = ['SENT']
     outputo = []
   
     cursent = Sent(getsent(inp))
     print(cursent.struct())
+    all, good = cursent.parse(all,good)
     inp = inp[len(cursent):]
-  #  partparse(inputo)
-  #  if parse(inputo,mag,outputo):
-  #    print (makesent(inputo)+' - Sucess!')
-  #   print(outputo)
-  #    print(makegood(inputo, outputo))
-  #  else:
-  #    print (makesent(inputo)+' - Fail!')
+  print('Time elapsed:'+str(time() - now))
+  print('All Sents:'+str(all)+'; Good Sents:'+str(good))
 
 if __name__=='__main__': main()
