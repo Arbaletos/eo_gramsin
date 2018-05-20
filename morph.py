@@ -11,59 +11,15 @@ from spacy.lang.eo import Esperanto
 
 TEI = '{http://www.tei-c.org/ns/1.0}'
 
-def numparse(instr):
-  """Parses Esperanto numerals """
-  edict = {'unu':1,'du':2,'tri':3,'kvar':4,'kvin':5,'ses':6,'sep':7,'ok':8,'naŭ':9}
-  mdict = {'dek':10,'cent':100}
-  cstr = instr[:]
-  if len(kombiki(cstr,edict,mdict))>0 or len(kombiki(cstr,mdict,edict))>0 or cstr in edict.keys() or cstr in mdict.keys():
-    return ['NUM']
-  return [] 
-
-
-def kombiki(cstr,kom_dict, fin_dict):
-  ret = []
+def kombiki(kom_dict, fin_dict):
+  ret = {}
   for kom in kom_dict.keys():
-      for fin in fin_dict.keys():
-        if kom+fin==cstr:
-          return [kom_dict[kom]+fin_dict[fin]]
+    for fin in fin_dict.keys():
+      try:
+        ret[kom+fin].append(kom_dict[kom]+fin_dict[fin])
+      except:
+        ret[kom+fin] = [kom_dict[kom]+fin_dict[fin]]  
   return ret
-
-      
-def korelativoj(instr):
-  """Parses correlatives in esperanto"""
-  cstr = instr[:]
-  kom_dict = {'ki':'INT','i':'IND','ĉi':'TOT','neni':'NEG','ti':'DEM'}
-  fin_dict = {'a':'ASN', \
-    'o':'PRUN','u':'DSN', \
-    'e':'ADV','el':'ADV','en':'ADD', \
-    'es':'DPS','om':'DQU', \
-    'am':'ADV','al':'ADV','on':'PRUA', \
-    'aj':'APN','an':'ASA',\
-    'ajn':'APA','uj':'DPN',\
-    'un':'DSA','ujn':'DPA'}
-  return kombiki(cstr,kom_dict,fin_dict)
-
-def pronomoj(instr):
-  """Parses pronouns"""
-  cstr = instr[:]
-  kom_dict = {'m':'PRS',
-    'v':'PRU', \
-    'c':'PRS', \
-    'l':'PRS', \
-    'ŝ':'PRS', \
-    'ĝ':'PRS', \
-    's':'PRS', \
-    'n':'PRP', \
-    'il':'PRP', \
-    'on':'PRP'}
-  fin_dict = {'i':'N', \
-    'in':'A', \
-    'ia':'PSN', \
-    'ian':'PSA', \
-    'iaj':'PPN', \
-    'iajn':'PPA'}
-  return kombiki(cstr,kom_dict,fin_dict)
 
 def qtrick(text):
   """The most bitchesfull trick in all this code. It changes all putin' kind shits with putinq shits, so we can parse it. ahahaHAHAHA!"""
@@ -84,47 +40,46 @@ def qtrick(text):
 def gettag(cword):
   ret = []
   global new_sent
+  upper = cword.text[0].isupper()
+  word = cword.text[:].lower()
+
   if cword.is_digit:
     return ['NUM']
   if cword.is_punct:
     return ['PUNCT']
-  if not new_sent:
-    if cword.text[0].isupper():
-      nomo = cword.text
-      ACC = False
-      if cword.text.endswith('y'):
-        return(['FPROPN'])
-      if nomo.endswith('on'):
-        print ('in putin we trust!')
-        nomo = nomo[:-1]
-        ACC = True
-      if nomo not in names_list:
-        names_list.append(nomo)
-      if ACC:
-        return(['PROPA'])
-      return(['PROPN']) 
+
+  if not new_sent and upper:
+    nomo = cword.text
+    ACC = False
+    if cword.text.endswith('y'):
+      return(['PROPN'])
+    if nomo.endswith('on'):
+      print ('in putin we trust!')
+      nomo = nomo[:-1]
+      ACC = True
+    if nomo not in names_list:
+      names_list.append(nomo)
+    if ACC:
+      return(['PROPA'])
+    return(['PROPN']) 
   new_sent = False
-  word = cword.text[:].lower()
-  ret+=numparse(word)
-  ret+=korelativoj(word)
-  ret+=pronomoj(word)
 
   if len(word)==1 or cword.text[-1]=='.':
     ret = ['SYM']
-
-  if word in dict.keys():
+  try:
     ret+=dict[word]
+  except:
+    pass
 
   if len(ret)==0:
     for fin in fin_dict.keys():
       if word.endswith(fin):
         ret+=[fin_dict[fin]]
   if len(ret)==0:
-    if cword.text[0].isupper():
+    if upper:
       nomo = cword.text
       ACC = False
       if nomo.endswith('on'):
-        print ('in putin we trust!')
         nomo = nomo[:-1]
         ACC = True
       if nomo not in names_list:
@@ -152,8 +107,7 @@ def postparse(sent):
         curs = sent+[[0,0,['$']]]
         ps = convert_dict.get(curs[ent_i-1][2][0],[curs[ent_i-1][2][0]])[0]
         ns = convert_dict.get(curs[ent_i+1][2][0],[curs[ent_i+1][2][0]])[0]
-        freq = [trigram[(ps, convert_dict.get(ent[2][x],[ent[2][x]])[0],ns)] for x in range(len(ent[2]))]
-    
+        freq = [trigram.get((ps, convert_dict.get(ent[2][x],[ent[2][x]])[0],ns),0) for x in range(len(ent[2]))]
         ent[2] = [ent[2][freq.index(max(freq))]]
       for tag in ent[2]:
         if not tag: continue
@@ -198,6 +152,44 @@ def output(conl):
     out.write(s+'\n')
 #  out.write('\n')
 
+def init_dict(dict):
+  num_k ={k:'NUM' for k in ['du','tri','kvar','kvin','ses','sep','ok','naŭ']}
+  num_f ={'dek':'','cent':''}
+#  kor_k = {'ki':'INT','i':'IND','ĉi':'TOT','neni':'NEG','ti':'DEM'}
+  kor_k = {'ki':'INT','i':'IND','ĉi':'IND','neni':'IND','ti':'DEM'}
+  kor_f = {'a':'ASN', \
+    'o':'PRUN','u':'DSN', \
+    'e':'ADV','el':'ADV','en':'ADD', \
+    'es':'DPS','om':'DQU', \
+    'am':'ADV','al':'ADV','on':'PRUA', \
+    'aj':'APN','an':'ASA',\
+    'ajn':'APA','uj':'DPN',\
+    'un':'DSA','ujn':'DPA'}
+  prn_k = {'m':'PRS',
+    'v':'PRU', \
+    'c':'PRS', \
+    'l':'PRS', \
+    'ŝ':'PRS', \
+    'ĝ':'PRS', \
+    's':'PRS', \
+    'n':'PRP', \
+    'il':'PRP', \
+    'on':'PRP'}
+  prn_f = {'i':'N', \
+    'in':'A', \
+    'ia':'PSN', \
+    'ian':'PSA', \
+    'iaj':'PPN', \
+    'iajn':'PPA'}
+  with open("dict.csv") as dictcsv:
+    for line in dictcsv:
+      c = line[:-1].split(',')
+      dict[c[0]] = c[1:]
+    dict.update(kombiki(num_k,num_f))
+    dict.update(kombiki(kor_k,kor_f))
+    dict.update(kombiki(prn_k,prn_f))
+ 
+
 #|-------------------------->╔═╦═╗║ ║ ║╠═╬═╣╚═╩═╝
 from time import time
 now = time()
@@ -206,8 +198,6 @@ names_list = []
 undef = []
 out = ''
 nlp = Esperanto()
-
-dictcsv = open("dict.csv","r")
 
 convert_dict = {   'NSN':['NOUN',1],  'NPN':['NOUN',2],
 'NSA':['NOUN',2],  'NPA':['NOUN',3],  'ASN':['ADJ',1],
@@ -221,29 +211,23 @@ convert_dict = {   'NSN':['NOUN',1],  'NPN':['NOUN',2],
 'PRSPSA':['DET',2],'PRPPSA':['DET',2],'PRUPSA':['DET',2],
 'PRSPPN':['DET',2],'PRPPPN':['DET',2],'PRUPPN':['DET',2], 
 'PRSPPA':['DET',3],'PRPPPA':['DET',3],'PRUPPA':['DET',3],
-'FPROPN':['PROPN',0], 'PROPA':['PROPN',1]}
+'PROPN':['PROPN',0], 'PROPA':['PROPN',1]}
 
 kom = ['INT','IND','TOT','NEG','DEM']
-fin = ['ASN','PRN','DSN','ADV','ADV',\
-  'ADD','DPS','DQU','ADV','ADV','PRA',\
+fin = ['ASN','PRUN','DSN','ADV','ADV',\
+  'ADD','DPS','DQU','ADV','ADV','PRUA',\
   'APN','ASA','APA','DPN','DSA','DPA']
 
 for k in kom:
   for f in fin:
     if f in ['APN','ASA','DPN','DSA']:
       convert_dict[k+f] = ['DET',1]
-    elif f in ['DPA','APA']:
-      convert_dict[k+f] = ['DET',2]
-    elif f in ['DSN','ASN','DQU','DPS']:
-      convert_dict[k+f] = ['DET',0]
-    elif f == 'PRA':
-      convert_dict[k+f] = ['PRON',1]
-    elif f == 'PRN':
-      convert_dict[k+f] = ['PRON',0]
-    elif f == 'ADV':
-      convert_dict[k+f] = ['ADV',0]
-    elif f == 'ADD':
-      convert_dict[k+f] = ['ADV',1]
+    elif f in ['DPA','APA']: convert_dict[k+f] = ['DET',2]
+    elif f in ['DSN','ASN','DQU','DPS']: convert_dict[k+f] = ['DET',0]
+    elif f == 'PRUA': convert_dict[k+f] = ['PRON',1]
+    elif f == 'PRUN': convert_dict[k+f] = ['PRON',0]
+    elif f == 'ADV': convert_dict[k+f] = ['ADV',0]
+    elif f == 'ADD': convert_dict[k+f] = ['ADV',1]
 
 fin_dict = { "'":'NSN',"q":"NSN",
 'o':'NSN','oj':'NPN','on':'NSA','ojn':'NPA',
@@ -251,12 +235,9 @@ fin_dict = { "'":'NSN',"q":"NSN",
 'e':'ADE','en':'ADD','as':'VPR','os':'VFT',
 'is':'VPS','i':'VIN','u':'VDM','us':'VCN'}
 
-for line in dictcsv:
-  c = line[:-1].split(',')
-  dict[c[0]] = c[1:]
-  dict['mal'+c[0]] = c[1:]
-dictcsv.close()
+init_dict(dict)
 
+print (dict)
 mark = False
 
 args = sys.argv[1:]
@@ -274,7 +255,7 @@ if '-m' in args:
 for f in (args):
   if f.endswith('.xml'):
     filename = 'xml/in/'+f
-    out = open('con/in/'+f+'.con',"w")
+    out = open('con/in/'+f[:-4]+'.con',"w")
     tree = etree.parse(filename)
     root = tree.getroot()
     for s in tree.iter(tag = TEI+'p'):

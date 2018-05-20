@@ -9,9 +9,13 @@ def up(key,stat_dict):
   except:
     stat_dict[key]=1
 
-try:
-  filn = sys.argv[1]
-except:
+mark = False
+filn = False
+
+for arg in sys.argv[1:]:
+  filn = arg
+
+if not filn:
   print('No such filename')
   quit()
 
@@ -51,7 +55,7 @@ freq_top = sorted(list(bigram),key = lambda x:bigram[x],reverse = True)
 
 stats = {'s_count':s_count,'w_count':len(con),'pos_count':pos,'tag_count':tag,'stem_count':stem,'vort_count':vort, 'freq':bigram}
 
-f = open('mark/in/' + filn + '.mrk','w')
+f = open('mark/in/' + filn + '.mrk','w') 
 for b in bigram.keys():
   f.write(b[0]+' '+b[1]+' '+b[2]+' '+str(bigram[b])+'\n')
 f.close()

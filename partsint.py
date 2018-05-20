@@ -33,15 +33,10 @@ class Sent:
   def struct(self):
     return ' '.join(['['+str(f)+']' for f in self.frazoj])
 
-  def parse(self,all,good):
-    if not self.frazoj: return all,good 
-    par = self.frazoj[0].parse(None)
-    if par:good+=1
-    all+=1
-    for i in range(len(par)):
-      print('Variant '+str(i+1))
-      print(print_l(par[i],'\n'))
-    return all,good
+  def parse(self):
+    if not self.frazoj: return []
+    par = self.frazoj[0].parse(None, True)
+    return par
      
    # return self.frazoj[0].parse(None)
  
@@ -83,9 +78,8 @@ class Frazo:
     return ' '.join(['|'+str(t)+'|' for t in self.tokens])
     
 
-  def parse(self,cont):
+  def parse(self,cont,simple = False):
     ret = []
-
     if not cont: cont = Context()
     adp = 0 
     for t in self.tokens:
@@ -93,8 +87,12 @@ class Frazo:
       if t.pos == 'ADP':
         adp = 1
         cont.add(t,'COM')
-      elif adp and t.type == 'NOUN': cont.add(t,'COM_NOUN')
-      elif adp and t.type == 'ADJ': cont.add(t,'COM_ADJ')
+      elif adp and t.type == 'NOUN':
+        cont.add(t,'COM_NOUN')
+        adp = 0
+      elif adp and t.type == 'ADJ':
+        cont.add(t,'COM_ADJ')
+        adp = 0
       elif t.type == 'NOUN':
         if t.case=='ACC': cont.add(t,'OBJ')
         elif t.case=='NOM': cont.add(t,'SUBJ')
@@ -103,27 +101,28 @@ class Frazo:
       elif t.type == 'ADV': cont.add(t,'OBS')
       elif t.type == 'VERB':
         if t.mode == 'IND': cont.add(t,'ROOT')
-        if t.mode =='IND':  cont.add(t,'INF')
+        if t.mode == 'CON': cont.add(t,'ROOT')
+        if t.mode == 'IMP': cont.add(t,'IMP')
+        if t.mode == 'INF':  cont.add(t,'INF')
 
     if cont.validate():
       if self.next:
 #        print('Context Enrich')
-        next = self.next.parse(Context(cont))
+        next = self.next.parse(Context(cont),simple)
 #        if next: print('Enrich True')
 #        else: print('Enrich False')
         for n in next:
           ret.append(n)
 
-        if cont.finished():
+        if cont.finished(simple):
 #          print('Complex Fork')
-          next = self.next.parse(None)
+          next = self.next.parse(None,False)
 #          if next: print('Complex Fork True')
 #          else: print('Complex Fork False')
           for n in next:
             ret.append([cont.finish()]+n)
         return ret
-
-      if cont.finished():    
+      if cont.finished(simple):    
         return [[cont.finish()]]
     return []
    
@@ -155,21 +154,26 @@ class Context:
   """Phrase shit"""
 
   def __init__(self,copy=None):
-    roles = ['OBJ','SUBJ','ROOT','DESC','COM','INF','COM_DESC']
+    roles = ['OBJ','SUBJ','ROOT','DESC','COM','INF','COM_DESC','OBS']
     if copy:
       self.comps = {r:copy.comps[r][:] for r in roles}
       self.pat = copy.pat
+      self.iva = copy.iva
       self.verb = copy.verb[:]
+      self.imp = copy.imp
     else:
       self.comps = {r:[] for r in roles}
       self.pat = ''
       self.verb = ['TRAN','INTR','PRED']
+      self.imp = False
+      self.iva = 0
 
   def __str__(self):
     return self.pat + ';\n' + \
            '  '+self.print_key('ROOT')+"; TYPE:"+print_l(self.verb)+";\n" + \
            '  '+self.print_key('SUBJ')+';\n' + \
            '  '+self.print_key('OBJ')+';\n' + \
+           '  '+self.print_key('OBS')+';\n' + \
            '  '+self.print_key('DESC')+';\n' + \
            '  '+self.print_key('COM')+';\n'
   
@@ -183,10 +187,16 @@ class Context:
 
   def add(self,t,role):
     try:
+      if role=='IMP':
+        role='ROOT'
+        self.imp = True
+      if role=='OBS' and self.iva == 2: self.iva = 3
       if role=='SUBJ': self.up_pat('N')
       if role=='ROOT': 
+        if self.iva==1: self.iva = 2
         if self.pat=='NV': self.pat+='V'
         else: self.up_pat('V')
+      if role=='INF' and not self.iva: self.iva = 1
       if role.startswith('COM_'):
         self.comps['COM'][-1].add(t)
       elif role.startswith('COM'):
@@ -198,27 +208,34 @@ class Context:
 
   def validate(self):
     obj = self.obj_est()
+    #print(str(self))
     unvalid = [[obj,self.pat=='NVN'],
                [len(self.pat)>=3,self.pat not in ['NVV','VNV','NVN']]]
     return (not dnf(unvalid))
         
-  def finished(self):
+  def finished(self,simple=False):
     af = self.adj_full()
     obj = self.obj_est()
     root = bool(self.comps['ROOT'])
     subj = bool(self.comps['SUBJ'])
+    inf = bool(self.comps['INF'])
+    imp = self.imp
 
-    self.fin = {'PRED':[self.pat == 'NVN', 
-            af, not obj, root, subj],
-           'INTR':[self.pat in ['NV','NVV','VN','VNV'], 
-            af, not obj, root,subj],
-           'TRAN':[self.pat in ['NV','VN','VNV','NVV'], 
-            af, obj, root, subj]
-          }
+    self.fin = [['PRED',self.pat == 'NVN', 
+                 af, not obj, root, subj or imp],
+                ['PRED', not subj, not obj, root, self.iva],
+                ['INTR',self.pat in ['NV','NVV','VN','VNV','V'], 
+                 af, not obj, root,subj or imp],
+                ['TRAN',self.pat in ['NV','VN','VNV','NVV','V'], 
+                 af, obj, root, subj or imp]]
 
-    self.verb = [k for k in self.fin.keys() if kon(self.fin[k])]
+    if simple:
+      self.fin.append(['STAT',af, not root])
+      self.fin.append(['NAT', root, not subj, not obj, not inf])
 
-    return self.validate() and dnf(list(self.fin.values()))
+    self.verb = [k[0] for k in self.fin if kon(k)]
+
+    return self.validate() and dnf(self.fin)
  
   def finish(self):
     if not self.finished(): return []
@@ -285,7 +302,71 @@ class Token:
 class Vort:
   """Word, consits of grammems"""
   #dict for get grams from tagname
-  gram_tag = {} 
+  gram_tag = {'PROPN':['SING','NOM','NOUN','UNDEF','UNDEF'],
+              'PROPA':['SING','ACC','NOUN','UNDEF','UNDEF'],
+              'NSN':['SING','NOM','NOUN','UNDEF','UNDEF'],
+              'NPN':['PLUR','NOM','NOUN','UNDEF','UNDEF'],
+              'NSA':['SING','ACC','NOUN','UNDEF','UNDEF'],
+              'NPA':['PLUR','ACC','NOUN','UNDEF','UNDEF'],
+              'ASN':['SING','NOM','ADJ','UNDEF','UNDEF'],
+              'APN':['PLUR','NOM','ADJ','UNDEF','UNDEF'],
+              'ASA':['SING','ACC','ADJ','UNDEF','UNDEF'],
+              'APA':['PLUR','ACC','ADJ','UNDEF','UNDEF'],
+              'PRSN':['SING','NOM','NOUN','UNDEF','UNDEF'],
+              'PRPN':['PLUR','NOM','NOUN','UNDEF','UNDEF'],
+              'PRUN':['UNDEF','NOM','NOUN','UNDEF','UNDEF'],
+              'PRSA':['SING','ACC','NOUN','UNDEF','UNDEF'],
+              'PRPA':['PLUR','ACC','NOUN','UNDEF','UNDEF'],
+              'PRUA':['UNDEF','NOM','NOUN','UNDEF','UNDEF'],
+              'PRSPSN':['SING','NOM','ADJ','UNDEF','UNDEF'],
+              'PRPPSN':['SING','NOM','ADJ','UNDEF','UNDEF'],
+              'PRUPSN':['SING','NOM','ADJ','UNDEF','UNDEF'],
+              'PRSPPN':['PLUR','NOM','ADJ','UNDEF','UNDEF'],
+              'PRPPPN':['PLUR','NOM','ADJ','UNDEF','UNDEF'],
+              'PRUPPN':['PLUR','NOM','ADJ','UNDEF','UNDEF'],
+              'PRSPSA':['SING','ACC','ADJ','UNDEF','UNDEF'],
+              'PRPPSA':['SING','ACC','ADJ','UNDEF','UNDEF'],
+              'PRUPSA':['SING','ACC','ADJ','UNDEF','UNDEF'],
+              'PRSPPA':['PLUR','ACC','ADJ','UNDEF','UNDEF'],
+              'PRPPPA':['PLUR','ACC','ADJ','UNDEF','UNDEF'],
+              'PRUPPA':['PLUR','ACC','ADJ','UNDEF','UNDEF'],
+              'INTDSN':['SING','NOM','NOUN','UNDEF','UNDEF'],
+              'INTDPN':['PLUR','NOM','NOUN','UNDEF','UNDEF'],
+              'INTDSA':['SING','ACC','NOUN','UNDEF','UNDEF'],
+              'INTDPA':['PLUR','ACC','NOUN','UNDEF','UNDEF'],
+              'INTPRUN':['UNDEF','NOM','NOUN','UNDEF','UNDEF'],
+              'INTPRUA':['UNDEF','NOM','NOUN','UNDEF','UNDEF'],
+              'INTASN':['SING','NOM','ADJ','UNDEF','UNDEF'],
+              'INTAPN':['PLUR','NOM','ADJ','UNDEF','UNDEF'],
+              'INTASA':['SING','ACC','ADJ','UNDEF','UNDEF'],
+              'INTAPA':['PLUR','ACC','ADJ','UNDEF','UNDEF'], 
+              'INDDSN':['SING','NOM','DET','UNDEF','UNDEF'],
+              'INDDPN':['PLUR','NOM','DET','UNDEF','UNDEF'],
+              'INDDSA':['SING','ACC','DET','UNDEF','UNDEF'],
+              'INDDPA':['PLUR','ACC','DET','UNDEF','UNDEF'],
+              'INDPRUN':['UNDEF','NOM','NOUN','UNDEF','UNDEF'],
+              'INDPRUA':['UNDEF','NOM','NOUN','UNDEF','UNDEF'],
+              'INDASN':['SING','NOM','ADJ','UNDEF','UNDEF'],
+              'INDAPN':['PLUR','NOM','ADJ','UNDEF','UNDEF'],
+              'INDASA':['SING','ACC','ADJ','UNDEF','UNDEF'],
+              'INDAPA':['PLUR','ACC','ADJ','UNDEF','UNDEF'], 
+              'DEMDSN':['SING','NOM','DET','UNDEF','UNDEF'],
+              'DEMDPN':['PLUR','NOM','DET','UNDEF','UNDEF'],
+              'DEMDSA':['SING','ACC','DET','UNDEF','UNDEF'],
+              'DEMDPA':['PLUR','ACC','DET','UNDEF','UNDEF'],
+              'DEMPRUN':['UNDEF','NOM','NOUN','UNDEF','UNDEF'],
+              'DEMPRUA':['UNDEF','NOM','NOUN','UNDEF','UNDEF'],
+              'DEMASN':['SING','NOM','ADJ','UNDEF','UNDEF'],
+              'DEMAPN':['PLUR','NOM','ADJ','UNDEF','UNDEF'],
+              'DEMASA':['SING','ACC','ADJ','UNDEF','UNDEF'],
+              'DEMAPA':['PLUR','ACC','ADJ','UNDEF','UNDEF'], 
+              'VPR':['UNDEF','UNDEF','VERB','IND','PRESENT'],
+              'VPS':['UNDEF','UNDEF','VERB','IND','PAST'],
+              'VFT':['UNDEF','UNDEF','VERB','IND','FUTURE'],
+              'VIN':['UNDEF','UNDEF','VERB','INF','UNDEF'],
+              'VDM':['UNDEF','UNDEF','VERB','IMP','UNDEF'],
+              'VCN':['UNDEF','UNDEF','VERB','CON','UNDEF']
+} 
              
   verb_mode = {'VPR':'IND','VPS':'IND','VFT':'IND','VIN':'INF','VDM':'IMP','VCN':'CON'}
   verb_time = {'VPR':'PRESENT','VPS':'PAST','VFT':'FUTURE'}
@@ -298,17 +379,6 @@ class Vort:
     except:
       ng = ['UNDEF','UNDEF',s.pos,'UNDEF','UNDEF']
       #      Count,  Case,   Type,   Mode,   Time
-      if s.pos in ['NOUN','ADJ','PRON']:
-        print ("Vort:"+s.vort+"Shit's tag:"+s.tag)
-        ng[0] = s.counts[s.tag[-2]]
-        ng[1] = s.cases[s.tag[-1]]
-        if s.pos=='PRON':
-          if len(s.tag)==4: ng[2] = 'NOUN'
-          else: ng[2] = 'ADJ'
-      elif s.pos == 'VERB':
-        ng[3] = s.verb_mode[s.tag]
-        ng[4] = s.verb_time.get(s.tag,'UNDEF')
-      ng = tuple(ng)
       s.gram_tag[s.tag] = ng
       return ng
 
@@ -339,36 +409,34 @@ def main():
   now = time()
   if len(sys.argv)<2:  filename = 'nivelo3'
   else: filename = sys.argv[1]
-  rules = {'COLON':[['VORT/:']],'COMMA':[['VORT/,']]}
   inp = parsecon('con/in/'+filename+'.con')
   #KOSTYL
   inputo = [('1','NUM'),('.','PUNCT')]
   outputo = []
-  mag = ['SENT']
 
-  for line in open('gram'):
-    if line[len(line)-1]=='\n':
-      line = line[:-1]
-    head = line.split(':')[0]
-    tail = line.split(':')[1].split(',')
-    tail.reverse()
-    if head in rules.keys():
-      rules[head] += [tail]
-    else:
-      rules[head] = [tail]
 
   #print(rules)
   all = 0
   good = 0
+  mul = 0
+  shitlist = []
   while len(inp)>0:
-    mag = ['SENT']
-    outputo = []
-  
     cursent = Sent(getsent(inp))
     print(cursent.struct())
-    all, good = cursent.parse(all,good)
+    par = cursent.parse()
+    if par:good+=1
+    else:
+      print('\tUnparsed!')
+      shitlist.append(cursent) 
+    all+=1
+    if len(par)>1: mul += 1
+    for i in range(len(par)):
+      print('Variant '+str(i+1))
+      print(print_l(par[i],'\n'))
     inp = inp[len(cursent):]
+    #input()
+  print(print_l(shitlist,'\n'))
   print('Time elapsed:'+str(time() - now))
-  print('All Sents:'+str(all)+'; Good Sents:'+str(good))
-
+  print('All Sents:'+str(all)+'; Good Sents:'+str(good)+'; Multiple sent:' + str(mul))
+  print('Accuracy:' + str(100*good/all)+'%')
 if __name__=='__main__': main()
