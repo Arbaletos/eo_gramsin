@@ -43,6 +43,11 @@ class Sent:
   def fragmentu(self, vortoj):
     def rule(vort):
       rules = [('vort',','), 
+               ('vort','"'),
+               ('vort',"'"),
+               ('vort',":"),
+               ('vort','('),
+               ('vort',')'),    
                ('pos','CCONJ'), 
                ('pos','SCONJ')]
       for r in rules:
@@ -130,7 +135,7 @@ class Frazo:
     self.tokens = []
     cur = None
     t_id = 0
-    print(print_l(vortoj,' '))
+    #print(print_l(vortoj,' '))
     for v in vortoj:
       new = True
       if v.type=='NOUN':
@@ -167,7 +172,8 @@ class Context:
       self.verb = ['TRAN','INTR','PRED']
       self.imp = False
       self.iva = 0
-
+      self.finished_stat = False
+      self.valid = False
   def __str__(self):
     return self.pat + ';\n' + \
            '  '+self.print_key('ROOT')+"; TYPE:"+print_l(self.verb)+";\n" + \
@@ -211,7 +217,8 @@ class Context:
     #print(str(self))
     unvalid = [[obj,self.pat=='NVN'],
                [len(self.pat)>=3,self.pat not in ['NVV','VNV','NVN']]]
-    return (not dnf(unvalid))
+    self.valid = (not dnf(unvalid))
+    return self.valid
         
   def finished(self,simple=False):
     af = self.adj_full()
@@ -225,20 +232,21 @@ class Context:
                  af, not obj, root, subj or imp],
                 ['PRED', not subj, not obj, root, self.iva],
                 ['INTR',self.pat in ['NV','NVV','VN','VNV','V'], 
-                 af, not obj, root,subj or imp],
-                ['TRAN',self.pat in ['NV','VN','VNV','NVV','V'], 
+                 af, not obj, root, subj or imp],
+                ['TRAN',self.pat in ['NV','VN','VNV','NVV','NVN','V'], 
                  af, obj, root, subj or imp]]
 
     if simple:
-      self.fin.append(['STAT',af, not root])
-      self.fin.append(['NAT', root, not subj, not obj, not inf])
+      self.fin.append(['STAT', af, not root])
+      self.fin.append(['NAT', root, not subj, not inf])
+      self.fin.append(['INF', not root, not subj, inf])
 
     self.verb = [k[0] for k in self.fin if kon(k)]
-
-    return self.validate() and dnf(self.fin)
+    self.finished_stat = self.valid and dnf(self.fin)
+    return self.finished_stat
  
   def finish(self):
-    if not self.finished(): return []
+    if not self.finished_stat: return []
     return self
 
   def obj_est(self):
@@ -420,22 +428,23 @@ def main():
   good = 0
   mul = 0
   shitlist = []
-  while len(inp)>0:
+#  while len(inp)>0:
+  for i in range(4277):
     cursent = Sent(getsent(inp))
-    print(cursent.struct())
+    #print(cursent.struct())
     par = cursent.parse()
     if par:good+=1
     else:
-      print('\tUnparsed!')
+      #print('\tUnparsed!')
       shitlist.append(cursent) 
     all+=1
     if len(par)>1: mul += 1
-    for i in range(len(par)):
-      print('Variant '+str(i+1))
-      print(print_l(par[i],'\n'))
+    #for i in range(len(par)):
+      #print('Variant '+str(i+1))
+      #print(print_l(par[i],'\n'))
     inp = inp[len(cursent):]
     #input()
-  print(print_l(shitlist,'\n'))
+  #print(print_l(shitlist,'\n'))
   print('Time elapsed:'+str(time() - now))
   print('All Sents:'+str(all)+'; Good Sents:'+str(good)+'; Multiple sent:' + str(mul))
   print('Accuracy:' + str(100*good/all)+'%')

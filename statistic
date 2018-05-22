@@ -1,18 +1,35 @@
-Fundamenta-Krestomatio
-4312 - sentences
-91499 - words
+Fundamenta-Krestomatio 3132 1390 7027
+4277 - sentences     21 ps 5.7 pp
+90621 - words
+6402 - different stems 7.0%
+11412 - different words 12.6%
+noun 14831 16.4%
+punct 14086 15.5%
+verb 10705 11.8%
+det 10235 11.3%
+adp 9080 10.0%
 
-6119 - different stems
-11448 - different words
+monato: del = 21155+8769+44050 = 6.1 pp
+w 671845 
+s 35828
+dw 39973
+ds 64659
+noun 114568
+punct 110546
+verb 68371
+adp 65624
+adj 62717
 
-
-  91499
- 679374
-1065783
-
-35872
-70357
- 4312
+ekz
+w 8068
+s 568
+dw 1877
+ds 1283
+punct 1877
+noun 1271
+verb 1065
+det 807
+pron 622
 
 
 Init:
@@ -46,6 +63,18 @@ add 'det' role for tiu, cxiu vortoj.
 add 'iva' sentences
 	547	478	70	87.38%	1.07s
 	4277	3409	1106	79.70	12.96s
+add simple inf sentence
+	547	483	71	88.29%	1.04s
+	4277	3415	1114	79.84%	13.34s
+add : ' " ( ) as delimeters
+	568	510	79	89.80%	1.31s
+	4277	3511	1198	82.09	12.92s
+
+Optimize:
+Ekzerc	568	510	79	89.80%	1.10s
+Krest	4277	3511	1198	82.09	9.30s
+monato	35872	28555	9131	79.60	555s	115s
+ondo	70010	52648	10554	75.20%	1471	297
 
 
 
