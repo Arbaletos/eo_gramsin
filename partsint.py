@@ -87,6 +87,7 @@ class Frazo:
     ret = []
     if not cont: cont = Context()
     adp = 0 
+    new = True
     for t in self.tokens:
       """Roles Putinismus!"""
       if t.pos == 'ADP':
@@ -99,17 +100,18 @@ class Frazo:
         cont.add(t,'COM_ADJ')
         adp = 0
       elif t.type == 'NOUN':
-        if t.case=='ACC': cont.add(t,'OBJ')
-        elif t.case=='NOM': cont.add(t,'SUBJ')
+        if t.case=='ACC': cont.add(t,'OBJ',new)
+        elif t.case=='NOM': cont.add(t,'SUBJ',new)
         else: return False
-      elif t.type == 'ADJ': cont.add(t,'DESC')
+      elif t.type == 'ADJ': cont.add(t,'DESC',new)
       elif t.type == 'ADV': cont.add(t,'OBS')
       elif t.type == 'VERB':
         if t.mode == 'IND': cont.add(t,'ROOT')
         if t.mode == 'CON': cont.add(t,'ROOT')
         if t.mode == 'IMP': cont.add(t,'IMP')
         if t.mode == 'INF':  cont.add(t,'INF')
-
+      new = False
+    prod = True
     if cont.validate():
       if self.next:
 #        print('Context Enrich')
@@ -166,6 +168,8 @@ class Context:
       self.iva = copy.iva
       self.verb = copy.verb[:]
       self.imp = copy.imp
+      self.last = copy.last
+      self.len = copy.len
     else:
       self.comps = {r:[] for r in roles}
       self.pat = ''
@@ -174,6 +178,9 @@ class Context:
       self.iva = 0
       self.finished_stat = False
       self.valid = False
+      self.last = False
+      self.len = 0
+
   def __str__(self):
     return self.pat + ';\n' + \
            '  '+self.print_key('ROOT')+"; TYPE:"+print_l(self.verb)+";\n" + \
@@ -191,8 +198,12 @@ class Context:
     if not self.pat.endswith(arg):
       self.pat = self.pat+arg
 
-  def add(self,t,role):
+  def add(self,t,role,new = False):
     try:
+      if self.last and self.last[0].startswith('COM_'):
+        if self.last[1].count == t.count and \
+           self.last[1].case == t.case:
+          role = 'COM_'+t.type
       if role=='IMP':
         role='ROOT'
         self.imp = True
@@ -209,8 +220,10 @@ class Context:
         self.comps[role].append(Token(t.ind,t.vortoj[:]))
       else:
         self.comps[role].append(t)
+      self.last = (role,t)
     except:
       self.comps[role] = [t]
+    self.len+=1
 
   def validate(self):
     obj = self.obj_est()
@@ -428,8 +441,8 @@ def main():
   good = 0
   mul = 0
   shitlist = []
-#  while len(inp)>0:
-  for i in range(4277):
+  while len(inp)>0:
+#  for i in range(4277):
     cursent = Sent(getsent(inp))
     #print(cursent.struct())
     par = cursent.parse()
